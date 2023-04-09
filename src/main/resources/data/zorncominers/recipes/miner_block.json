@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": {
+      "item": "minecraft:diamond_pickaxe"
+    },
+    "G": {
+      "tag": "forge:storage_blocks/iron"
+    },
+    "H": {
+      "item": "minecraft:iron_bars"
+    },
+    "S": {
+      "tag": "forge:stone"
+    }
+  },
+  "pattern": [
+    "SSS",
+    "HGH",
+    "SCS"
+  ],
+  "result": {
+    "item": "zorncominers:miner_block"
+  }
+}

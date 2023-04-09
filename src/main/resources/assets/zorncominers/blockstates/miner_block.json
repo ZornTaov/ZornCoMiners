@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "zorncominers:block/miner_block"
+    }
+  }
+}

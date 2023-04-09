@@ -1,0 +1,7 @@
+{
+  "block.zorncominers.miner_block": "Miner",
+  "item.zorncominers.test_pad": "Test Pad",
+  "itemGroup.zorncominers": "ZornCo Miner",
+  "zorncominers.top.connected_to": "Connected To: %s",
+  "zorncominers.top.transferred": "FE/t: %s"
+}
