@@ -8,19 +8,28 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.IItemHandler;
+import org.jetbrains.annotations.NotNull;
+import org.zornco.miners.Configuration;
 import org.zornco.miners.Registration;
+import org.zornco.miners.capability.EnergyCap;
 
 import javax.annotation.Nonnull;
 
 public class MinerTile extends BlockEntity {
 
+    EnergyCap energyStorage;
+    LazyOptional<EnergyCap> energy;
     public int ticksRunning = 0;
 
     public MinerTile(BlockPos p_155229_, BlockState p_155230_) {
         super(Registration.MINER_TILE.get(), p_155229_, p_155230_);
+        energyStorage = new EnergyCap(10000);
+        this.energy = LazyOptional.of(() -> this.energyStorage);
     }
 
     @Override
@@ -32,12 +41,14 @@ public class MinerTile extends BlockEntity {
     public void load(@Nonnull CompoundTag tag) {
         super.load(tag);
         this.ticksRunning = tag.getInt("ticks");
+        energyStorage.deserializeNBT(tag.get("energy"));
     }
 
     @Override
     protected void saveAdditional(@Nonnull CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("ticks", this.ticksRunning);
+        tag.put("energy", energyStorage.serializeNBT());
     }
 
     @Nonnull
@@ -51,12 +62,17 @@ public class MinerTile extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        energy.invalidate();
+    }
+
     public static void tickCommon(Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull MinerTile tile) {
         if(level == null) return;
-        // TODO change with tier?
-        int speed = 40; // 1op/second
-        int validationSpeed = 20; // validate every second
         tile.ticksRunning++;
+
+        int validationSpeed = 20; // validate every second
         // only do validation once every so often
         if (tile.ticksRunning % validationSpeed == 0) {
             // do multiblock validation
@@ -68,14 +84,19 @@ public class MinerTile extends BlockEntity {
             if (!isValid) return;
         }
 
+        // TODO change with tier?
+        int speed = 10; // 2op/1s
         // only do operation once every so often
         if (tile.ticksRunning % speed != 0) return;
         BlockState blockUnder = level.getBlockState(pos.below());
 
-        // TODO only do operation if power is supplied and config is enabled
+        // only do operation if power is supplied and config is enabled
+        if (Configuration.useEnergy() &&
+            tile.energyStorage.extractEnergy(Configuration.energyUsedPerTick(), true) != Configuration.energyUsedPerTick()) return;
 
         // TODO change to match recipe
-        if(blockUnder.is(Tags.Blocks.ORES))
+        boolean blockUnderIsValid = blockUnder.is(Tags.Blocks.ORES);
+        if(blockUnderIsValid)
         {
             BlockEntity tileAbove = level.getBlockEntity(pos.above());
             if(tileAbove == null) return;
@@ -104,9 +125,19 @@ public class MinerTile extends BlockEntity {
                         break;
                     }
                 }
+                if (Configuration.useEnergy())
+                    tile.energyStorage.extractEnergy(Configuration.energyUsedPerTick(), false);
             });
         }
         // TODO if config is true, remove random/furthest oreblock after X uses
     }
 
+    @Override
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap) {
+        if (cap == ForgeCapabilities.ENERGY)
+        {
+            return energy.cast();
+        }
+        return super.getCapability(cap);
+    }
 }
