@@ -13,6 +13,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 import org.zornco.miners.compat.TheOneProbeCompat;
+import org.zornco.miners.recipe.RecipeRegistration;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(ZornCoMiners.MOD_ID)
@@ -32,6 +33,7 @@ public class ZornCoMiners
         modEventBus.addListener(this::enqueueIMC);
 
         Registration.init(modEventBus);
+        RecipeRegistration.init(modEventBus);
 
         // Configuration
         ModLoadingContext mlCtx = ModLoadingContext.get();

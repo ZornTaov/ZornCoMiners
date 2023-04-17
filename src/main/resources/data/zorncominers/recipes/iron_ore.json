@@ -1,0 +1,11 @@
+{
+  "type": "zorncominers:miner",
+  "tierMinimum": 1,
+  "resource": "minecraft:iron_ore",
+  "outputs": [
+    {
+      "id": "minecraft:diamond_block",
+      "Count": 1
+    }
+  ]
+}
