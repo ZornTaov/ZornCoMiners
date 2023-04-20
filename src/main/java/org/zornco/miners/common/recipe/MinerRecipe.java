@@ -1,4 +1,4 @@
-package org.zornco.miners.recipe;
+package org.zornco.miners.common.recipe;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonSyntaxException;
@@ -13,10 +13,8 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
-import org.zornco.miners.Codecs;
+import org.zornco.miners.common.core.Codecs;
 
 import java.util.List;
 

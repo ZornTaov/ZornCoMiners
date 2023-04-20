@@ -4,7 +4,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.tags.BlockTagsProvider;
 import net.minecraft.tags.BlockTags;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.zornco.miners.Registration;
+import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.ZornCoMiners;
 
 import java.util.Set;

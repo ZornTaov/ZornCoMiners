@@ -1,4 +1,4 @@
-package org.zornco.miners.item;
+package org.zornco.miners.common.item;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.item.Item;
@@ -6,8 +6,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.InteractionResult;
-import org.zornco.miners.Registration;
-import org.zornco.miners.Utils;
+import org.zornco.miners.common.core.Registration;
+import org.zornco.miners.common.core.Utils;
 import org.zornco.miners.ZornCoMiners;
 
 import javax.annotation.Nonnull;

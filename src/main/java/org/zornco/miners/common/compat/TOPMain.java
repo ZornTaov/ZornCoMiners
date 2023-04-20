@@ -1,4 +1,4 @@
-package org.zornco.miners.compat;
+package org.zornco.miners.common.compat;
 
 import mcjty.theoneprobe.api.ITheOneProbe;
 

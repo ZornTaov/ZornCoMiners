@@ -4,7 +4,7 @@ import net.minecraft.data.DataGenerator;
 import net.minecraftforge.common.data.LanguageProvider;
 import org.zornco.miners.ZornCoMiners;
 
-import static org.zornco.miners.Registration.*;
+import static org.zornco.miners.common.core.Registration.*;
 
 public class LangGenerator extends LanguageProvider {
     public LangGenerator(DataGenerator generator) {

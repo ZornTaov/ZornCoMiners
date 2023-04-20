@@ -1,4 +1,4 @@
-package org.zornco.miners.tile;
+package org.zornco.miners.common.tile;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -16,26 +16,26 @@ import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
 import net.minecraft.world.level.block.state.predicate.BlockPredicate;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.common.Tags;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
-import org.zornco.miners.Configuration;
-import org.zornco.miners.Registration;
-import org.zornco.miners.block.DrillBlock;
-import org.zornco.miners.block.MinerBlock;
-import org.zornco.miners.capability.EnergyCap;
-import org.zornco.miners.recipe.FakeInventory;
-import org.zornco.miners.recipe.MinerRecipe;
-import org.zornco.miners.recipe.RecipeRegistration;
+import org.zornco.miners.common.config.Configuration;
+import org.zornco.miners.common.core.MinerTierRegistration;
+import org.zornco.miners.common.core.Registration;
+import org.zornco.miners.common.block.MinerBlock;
+import org.zornco.miners.common.capability.EnergyCap;
+import org.zornco.miners.common.recipe.FakeInventory;
+import org.zornco.miners.common.recipe.MinerRecipe;
+import org.zornco.miners.common.recipe.RecipeRegistration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
 public class MinerTile extends BlockEntity {
@@ -43,8 +43,13 @@ public class MinerTile extends BlockEntity {
     private static final HashMap<Block, BlockPattern> patterns = new HashMap<>();
     private static final HashMap<TagKey<Block>, BlockPattern> tagPatterns = new HashMap<>();
     private List<ItemStack> lastOutputs = null;
+    private BlockPattern pattern = null; // the current pattern we are using.
+
     EnergyCap energyStorage;
+    ItemStackHandler storage = new ItemStackHandler(1);
+
     LazyOptional<EnergyCap> energy;
+    LazyOptional<IItemHandler> item = LazyOptional.of(() -> storage);
     public int ticksRunning = 0;
 
     public MinerTile(BlockPos p_155229_, BlockState p_155230_) {
@@ -89,6 +94,9 @@ public class MinerTile extends BlockEntity {
         if (Configuration.useEnergy() && cap == ForgeCapabilities.ENERGY)
             return energy.cast();
 
+        if (cap == ForgeCapabilities.ITEM_HANDLER)
+            return item.cast();
+
         return super.getCapability(cap, side);
     }
 
@@ -102,52 +110,49 @@ public class MinerTile extends BlockEntity {
         if(level == null) return;
         if(level.isClientSide()) return;
         tile.ticksRunning++;
-
         int validationSpeed = 20; // validate every second
         // only do validation once every so often
+
         if (tile.ticksRunning % validationSpeed == 0) {
-            // do multiblock validation
-            // TODO allow for any number of ores, this changes yield per operation maybe?
-            for (MinerRecipe recipe : level.getRecipeManager().getRecipesFor(RecipeRegistration.MINER_RECIPE.get(), FakeInventory.INSTANCE, level)) {
-                // get/cache pattern
-                BlockPattern pattern = null;
-                try {
-                    if (recipe.getResource() != Blocks.AIR) {
-                        pattern = getPattern(recipe.getResource(), recipe.codecTier(), BlockStatePredicate.forBlock(recipe.getResource()));
-                    } else if(!recipe.getResourceTag().location().getPath().equals("air")) {
-                        pattern = getPattern(recipe.getResourceTag(), recipe.codecTier(), (blockState) -> blockState.is(recipe.getResourceTag()));
-                    }
-                } catch (Exception e)
-                {
-                    // should never happen?
-                    return;
-                }
-                // should never happen?
-                if (pattern == null) return;
+            if (tile.pattern == null) {
 
-                BlockPattern.BlockPatternMatch patternMatch = pattern.find(level, tile.getBlockPos());
-
-                // if pattern matches, cache outputs and set blockstate for visuals
-                if (patternMatch != null)
-                {
-                    BlockPos ftl = patternMatch.getFrontTopLeft();
-                    for (int i = 0; i < 2; i++) {
-                        for (int j = 0; j < 2; j++) {
-                            // check speed caps?
+                // do multiblock validation
+                // TODO allow for any number of ores, this changes yield per operation maybe?
+                for (MinerRecipe recipe : level.getRecipeManager().getRecipesFor(RecipeRegistration.MINER_RECIPE.get(), FakeInventory.INSTANCE, level)) {
+                    // get/cache pattern
+                    try {
+                        if (recipe.getResource() != Blocks.AIR) {
+                            tile.pattern = getPattern(recipe.getResource(), recipe.codecTier(), BlockStatePredicate.forBlock(recipe.getResource()));
+                        } else if (!recipe.getResourceTag().location().getPath().equals("air")) {
+                            tile.pattern = getPattern(recipe.getResourceTag(), recipe.codecTier(), (blockState) -> blockState.is(recipe.getResourceTag()));
                         }
+                    } catch (Exception e) {
+                        // should never happen?
+                        return;
                     }
-                    level.setBlockAndUpdate(pos, state.setValue(MinerBlock.PROP_IS_VALID, MinerBlock.ValidStatus.VALID));
-                    tile.lastOutputs = recipe.codecOutputs();
-                    break;
+
+                    BlockPattern.BlockPatternMatch match = tile.pattern.find(level, tile.getBlockPos());
+
+                    if (match != null) {
+                        level.setBlockAndUpdate(pos, state.setValue(MinerBlock.VALID, true));
+                        tile.lastOutputs = recipe.codecOutputs();
+                        break;
+                    } else {
+                        level.setBlockAndUpdate(pos, state.setValue(MinerBlock.VALID, false));
+                        tile.lastOutputs = null;
+                    }
                 }
-                else {
-                    level.setBlockAndUpdate(pos, state.setValue(MinerBlock.PROP_IS_VALID, MinerBlock.ValidStatus.INVALID));
+            } else {
+                if (tile.pattern.find(level, pos) == null) {
+                    tile.pattern = null;
                     tile.lastOutputs = null;
+                    level.setBlockAndUpdate(pos, state.setValue(MinerBlock.VALID, false));
                 }
             }
         }
+
         // get out early if recipe isn't set
-        if (tile.lastOutputs == null)
+        if (tile.pattern == null || tile.lastOutputs == null)
             return;
 
         // TODO change with tier?
@@ -156,7 +161,7 @@ public class MinerTile extends BlockEntity {
         if (tile.ticksRunning % speed != 0) return;
 
         // only run if structure is valid
-        if (level.getBlockState(pos).getValue(MinerBlock.PROP_IS_VALID) != MinerBlock.ValidStatus.VALID) {
+        if (!level.getBlockState(pos).getValue(MinerBlock.VALID)) {
             return;
         }
 
@@ -167,10 +172,9 @@ public class MinerTile extends BlockEntity {
         BlockEntity tileAbove = level.getBlockEntity(pos.above());
         if(tileAbove == null) return;
         LazyOptional<IItemHandler> cap = tileAbove.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN);
+        AtomicBoolean pushed = new AtomicBoolean(false);
 
-        cap.ifPresent(storage ->
-        {
-            boolean pushedStack = false;
+        cap.ifPresent(storage -> {
             for (ItemStack output : tile.lastOutputs) {
                 ItemStack stack = output.copy();
                 if (stack.isEmpty())
@@ -180,14 +184,32 @@ public class MinerTile extends BlockEntity {
                 for (int i = 0; i < storage.getSlots(); i++) {
                     if (storage.isItemValid(i, stack) && storage.insertItem(i, stack, true).isEmpty()) {
                         storage.insertItem(i, stack, false);
-                        pushedStack = true;
+                        pushed.set(true);
                         break;
                     }
                 }
             }
-            if (pushedStack && Configuration.useEnergy())
-                tile.energyStorage.extractEnergy(Configuration.energyUsedPerTick(), false);
         });
+
+        if (!pushed.get()) {
+            for (ItemStack output : tile.lastOutputs) {
+                ItemStack stack = output.copy();
+                if (stack.isEmpty())
+                    return; // bad recipe!
+                //ItemStack stack = new ItemStack(blockUnder.getBlock().asItem());
+                // TODO incorporate percentage outputs?
+                for (int i = 0; i < tile.storage.getSlots(); i++) {
+                    if (tile.storage.isItemValid(i, stack) && tile.storage.insertItem(i, stack, true).isEmpty()) {
+                        tile.storage.insertItem(i, stack, false);
+                        pushed.set(true);
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (pushed.get() && Configuration.useEnergy())
+            tile.energyStorage.extractEnergy(Configuration.energyUsedPerTick(), false);
         // TODO if config is true, remove random/furthest oreblock after X uses
     }
 
@@ -223,7 +245,7 @@ public class MinerTile extends BlockEntity {
             .aisle("     ", " ooo ", " ooo ", " ooo ", "     ")
             .aisle("     ", " ooo ", " ooo ", " ooo ", "     ")
             .where('o', BlockInWorld.hasState(predicate))
-            .where('#', BlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BARS)))//BlockInWorld.hasState(blockState -> blockState.getValue(DrillBlock.TIER) >= tier))
+            .where('#', BlockInWorld.hasState(blockState -> MinerTierRegistration.isValidForTier(blockState.getBlock(), tier)))
             .where('m', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
             .where('d', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
             .build();

@@ -1,4 +1,4 @@
-package org.zornco.miners;
+package org.zornco.miners.common.core;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;

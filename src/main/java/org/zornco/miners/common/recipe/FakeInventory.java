@@ -1,6 +1,5 @@
-package org.zornco.miners.recipe;
+package org.zornco.miners.common.recipe;
 
-import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
 

@@ -1,4 +1,4 @@
-package org.zornco.miners.capability;
+package org.zornco.miners.common.capability;
 
 import net.minecraftforge.energy.EnergyStorage;
 

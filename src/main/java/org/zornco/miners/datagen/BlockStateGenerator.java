@@ -5,12 +5,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
-import net.minecraftforge.client.model.generators.ModelProvider;
 import net.minecraftforge.common.data.ExistingFileHelper;
-import org.zornco.miners.Registration;
+import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.ZornCoMiners;
-
-import java.util.Objects;
 
 public class BlockStateGenerator extends BlockStateProvider {
     public BlockStateGenerator(DataGenerator gen, ExistingFileHelper exFileHelper) {

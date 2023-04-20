@@ -1,6 +1,6 @@
 {
   "type": "zorncominers:miner",
-  "tierMinimum": 1,
+  "tierMinimum": 2,
   "resourceTag": "forge:ores/copper",
   "outputs": [
     {

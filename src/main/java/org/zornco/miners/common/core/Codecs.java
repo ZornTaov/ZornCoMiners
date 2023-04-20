@@ -1,4 +1,4 @@
-package org.zornco.miners;
+package org.zornco.miners.common.core;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

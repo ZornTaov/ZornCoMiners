@@ -1,6 +1,5 @@
-package org.zornco.miners;
+package org.zornco.miners.common.core;
 
-import io.netty.util.Attribute;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -15,10 +14,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-import org.zornco.miners.block.DrillBlock;
-import org.zornco.miners.block.MinerBlock;
-import org.zornco.miners.item.TestPadItem;
-import org.zornco.miners.tile.MinerTile;
+import org.zornco.miners.ZornCoMiners;
+import org.zornco.miners.common.block.DrillBlock;
+import org.zornco.miners.common.block.MinerBlock;
+import org.zornco.miners.common.item.TestPadItem;
+import org.zornco.miners.common.tile.MinerTile;
 
 import javax.annotation.Nonnull;
 

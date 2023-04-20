@@ -5,9 +5,8 @@ import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.common.Tags;
-import org.zornco.miners.Registration;
+import org.zornco.miners.common.core.Registration;
 
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;

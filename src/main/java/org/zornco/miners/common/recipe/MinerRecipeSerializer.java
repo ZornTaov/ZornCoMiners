@@ -1,4 +1,4 @@
-package org.zornco.miners.recipe;
+package org.zornco.miners.common.recipe;
 
 import com.google.gson.JsonObject;
 import com.mojang.serialization.DataResult;

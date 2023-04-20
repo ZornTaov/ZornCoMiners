@@ -1,7 +1,6 @@
-package org.zornco.miners.block;
+package org.zornco.miners.common.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -11,36 +10,23 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.zornco.miners.Registration;
-import org.zornco.miners.tile.MinerTile;
-
-import javax.annotation.Nonnull;
+import org.zornco.miners.common.core.Registration;
+import org.zornco.miners.common.tile.MinerTile;
 
 public class MinerBlock extends BaseEntityBlock {
-
-    public enum ValidStatus implements StringRepresentable {
-        INVALID,
-        VALID;
-
-        @Nonnull
-        @Override
-        public String getSerializedName() {
-            return this.name().toLowerCase();
-        }
-    }
-    public static final EnumProperty<ValidStatus> PROP_IS_VALID = EnumProperty.create("valid", ValidStatus.class);
+    public static final BooleanProperty VALID = BooleanProperty.create("valid");
 
     public MinerBlock(Properties p_49224_) {
         super(p_49224_);
-        this.registerDefaultState(this.stateDefinition.any().setValue(PROP_IS_VALID, ValidStatus.INVALID));
+        this.registerDefaultState(this.stateDefinition.any().setValue(VALID, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(PROP_IS_VALID);
+        builder.add(VALID);
     }
 
     @Nullable

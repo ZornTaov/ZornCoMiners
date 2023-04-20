@@ -1,4 +1,4 @@
-package org.zornco.miners.block;
+package org.zornco.miners.common.block;
 
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
