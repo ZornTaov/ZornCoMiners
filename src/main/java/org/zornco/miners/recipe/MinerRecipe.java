@@ -30,9 +30,9 @@ public class MinerRecipe implements Recipe<FakeInventory> {
     public static final Codec<MinerRecipe> CODEC = RecordCodecBuilder.create(i -> i.group(
 //        Codec.STRING.optionalFieldOf("resource", "")
 //            .forGetter(MinerRecipe::codecResource),
-        ResourceLocation.CODEC.optionalFieldOf("resource", new ResourceLocation(""))
+        ResourceLocation.CODEC.optionalFieldOf("resource", new ResourceLocation("minecraft:air"))
             .forGetter(MinerRecipe::codecResource),
-        Codec.STRING.optionalFieldOf("resourceTag", "")
+        Codec.STRING.optionalFieldOf("resourceTag", "minecraft:air")
             .forGetter(MinerRecipe::codecResourceTag),
         Codecs.FRIENDLY_ITEMSTACK.listOf().fieldOf("outputs")
             .forGetter(MinerRecipe::codecOutputs),

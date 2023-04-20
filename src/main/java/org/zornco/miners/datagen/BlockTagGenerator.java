@@ -19,7 +19,8 @@ public class BlockTagGenerator extends BlockTagsProvider {
     protected void addTags() {
 
         var blocks = Set.of(
-            Registration.MINER_BLOCK.get()
+            Registration.MINER_BLOCK.get(),
+            Registration.DRILL_BLOCK.get()
         );
         var pickaxe = tag(BlockTags.MINEABLE_WITH_PICKAXE);
         var ironTool = tag(BlockTags.NEEDS_IRON_TOOL);

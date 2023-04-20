@@ -1,10 +1,10 @@
 {
   "type": "zorncominers:miner",
   "tierMinimum": 1,
-  "resource": "minecraft:iron_ore",
+  "resourceTag": "forge:ores/copper",
   "outputs": [
     {
-      "id": "minecraft:iron_ingot",
+      "id": "minecraft:copper_ingot",
       "Count": 1
     }
   ]

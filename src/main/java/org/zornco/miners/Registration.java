@@ -1,5 +1,6 @@
 package org.zornco.miners;
 
+import io.netty.util.Attribute;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -14,6 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+import org.zornco.miners.block.DrillBlock;
 import org.zornco.miners.block.MinerBlock;
 import org.zornco.miners.item.TestPadItem;
 import org.zornco.miners.tile.MinerTile;
@@ -47,6 +49,8 @@ public class Registration {
     // ================================================================================================================
     public static final RegistryObject<MinerBlock> MINER_BLOCK =
         BLOCKS.register("miner_block", () -> new MinerBlock(baseProperty));
+    public static final RegistryObject<DrillBlock> DRILL_BLOCK =
+        BLOCKS.register("drill", () -> new DrillBlock(baseProperty));
     // ================================================================================================================
     //    ITEM BLOCKS
     // ================================================================================================================
@@ -54,6 +58,11 @@ public class Registration {
     public static final RegistryObject<Item> MINER_ITEM =
         ITEMS.register("miner_block", () ->
             new BlockItem(MINER_BLOCK.get(),
+                new Item.Properties().tab(Registration.ITEM_GROUP))
+        );    @SuppressWarnings("unused")
+    public static final RegistryObject<Item> DRILL_ITEM =
+        ITEMS.register("drill", () ->
+            new BlockItem(DRILL_BLOCK.get(),
                 new Item.Properties().tab(Registration.ITEM_GROUP))
         );
     // ================================================================================================================
