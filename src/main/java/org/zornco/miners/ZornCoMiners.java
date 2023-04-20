@@ -38,6 +38,7 @@ public class ZornCoMiners
         // Configuration
         ModLoadingContext mlCtx = ModLoadingContext.get();
         mlCtx.registerConfig(ModConfig.Type.SERVER, Configuration.CONFIG);
+        // Mango
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)
