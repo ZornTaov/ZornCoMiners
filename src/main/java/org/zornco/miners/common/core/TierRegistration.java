@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.HashMap;
 
-public class MinerTierRegistration {
+public class TierRegistration {
     /**
      * do we want tier x frame to only work with
      * tier x ore? So t1 ore can only use t1 frame,

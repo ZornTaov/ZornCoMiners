@@ -25,8 +25,9 @@ public class BlockStateGenerator extends BlockStateProvider {
 //        simpleBlockItem(Registration.ENERGY_CONTROLLER_BLOCK.get(), controllerModel);
         simpleBlock(Registration.MINER_BLOCK.get());
         simpleBlockItem(Registration.MINER_BLOCK.get(),cubeAll(Registration.MINER_BLOCK.get()));
+
         ModelFile.ExistingModelFile model = models().getExistingFile(new ResourceLocation(ZornCoMiners.MOD_ID, "drill"));
-        simpleBlock(Registration.DRILL_BLOCK.get(), new ConfiguredModel(model));
+        directionalBlock(Registration.DRILL_BLOCK.get(), model);
         simpleBlockItem(Registration.DRILL_BLOCK.get(), model);
     }
 }

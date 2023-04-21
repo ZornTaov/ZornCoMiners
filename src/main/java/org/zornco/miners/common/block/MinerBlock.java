@@ -11,22 +11,25 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.zornco.miners.common.core.BuildType;
 import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.common.tile.MinerTile;
 
 public class MinerBlock extends BaseEntityBlock {
     public static final BooleanProperty VALID = BooleanProperty.create("valid");
+    public static final EnumProperty<BuildType> TYPE = EnumProperty.create("type", BuildType.class);
 
     public MinerBlock(Properties p_49224_) {
         super(p_49224_);
-        this.registerDefaultState(this.stateDefinition.any().setValue(VALID, false));
+        this.registerDefaultState(this.stateDefinition.any().setValue(VALID, false).setValue(TYPE, BuildType.MULTIBLOCK));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(VALID);
+        builder.add(VALID, TYPE);
     }
 
     @Nullable
