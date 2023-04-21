@@ -8,12 +8,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
 import net.minecraft.world.level.block.state.predicate.BlockPredicate;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -31,13 +34,16 @@ import org.zornco.miners.common.recipe.RecipeRegistration;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import static org.zornco.miners.common.block.MinerBlock.TYPE;
 
 public class MinerTile extends BlockEntity {
     private static final HashMap<BuildType, BlockPattern> patterns = new HashMap<>();
-    private BlockPattern pattern = null; // the current pattern we are using.
+    private static BlockPattern pattern = getPattern(); // the current pattern we are using.
     private int minTier = -1;
 
     EnergyCap energyStorage;
@@ -46,6 +52,7 @@ public class MinerTile extends BlockEntity {
     LazyOptional<EnergyCap> energy;
     LazyOptional<IItemHandler> item = LazyOptional.of(() -> storage);
     public int ticksRunning = 0;
+    private MinerRecipe recipe;
 
     public MinerTile(BlockPos p_155229_, BlockState p_155230_) {
         super(Registration.MINER_TILE.get(), p_155229_, p_155230_);
@@ -110,31 +117,37 @@ public class MinerTile extends BlockEntity {
 
         if (tile.ticksRunning % validationSpeed == 0) {
             if (state.getValue(TYPE) == BuildType.MULTIBLOCK) {
-
-
-
                 // do multiblock validation
                 // TODO allow for any number of ores, this changes yield per operation maybe?
-                tile.pattern = getPattern(tile.getBlockState().getValue(TYPE));
-
-
-                BlockPattern.BlockPatternMatch match = tile.pattern.find(level, pos) ;
+                BlockPattern.BlockPatternMatch match = pattern.find(level, pos) ;
                 level.setBlockAndUpdate(pos, state.setValue(MinerBlock.VALID, match != null));
-
-
             }
         }
-
-        MinerRecipe recipe = RecipeRegistration.getRecipe(level.getBlockState(pos.below(2)).getBlock());
-
-        // get out early if recipe isn't set
-        if (tile.pattern == null || recipe == null)
-            return;
 
         // TODO change with tier?
         int speed = 10; // 2op/1s
         // only do operation once every so often
         if (tile.ticksRunning % speed != 0) return;
+        BlockPos center = pos.below(3);
+        var blockStates = getBlocksIn(
+            AABB.ofSize(new Vec3(center.getX(), center.getY(), center.getZ()), 3, 3, 3)
+        ).map(bp -> new BlockInWorld(level, bp, true)).filter(biw -> !biw.getState().isAir()).toList();
+        if(blockStates.isEmpty()) return;
+
+        for (int i = 0; i < 100; i++) {
+            BlockInWorld randBlockState = blockStates.get(level.getRandom().nextInt(blockStates.size()));
+            tile.recipe = switch (state.getValue(TYPE))
+            {
+                case MULTIBLOCK -> RecipeRegistration.getRecipe(randBlockState.getState());
+
+                case ORE -> RecipeRegistration.getRecipe(level.getBlockState(pos.below(1)));
+            };
+            if(tile.recipe != null) break;
+        }
+
+        // get out early if recipe isn't set
+        if (tile.recipe == null)
+            return;
 
         // only run if structure is valid
         if (!level.getBlockState(pos).getValue(MinerBlock.VALID)) {
@@ -151,7 +164,7 @@ public class MinerTile extends BlockEntity {
         AtomicBoolean pushed = new AtomicBoolean(false);
 
         cap.ifPresent(storage -> {
-            for (ItemStack output : recipe.codecOutputs()) {
+            for (ItemStack output : tile.recipe.codecOutputs()) {
                 ItemStack stack = output.copy();
                 if (stack.isEmpty())
                     return; // bad recipe!
@@ -168,7 +181,7 @@ public class MinerTile extends BlockEntity {
         });
 
         if (!pushed.get()) {
-            for (ItemStack output : recipe.codecOutputs()) {
+            for (ItemStack output : tile.recipe.codecOutputs()) {
                 ItemStack stack = output.copy();
                 if (stack.isEmpty())
                     return; // bad recipe!
@@ -202,39 +215,21 @@ public class MinerTile extends BlockEntity {
     }
 
     @NotNull
-    private static BlockPattern getPattern(BuildType key) {
-        if (!patterns.containsKey(key))
-            patterns.put(key, getBuild(key));
-        return patterns.get(key);
+    private static BlockPattern getPattern() {
+        return BlockPatternBuilder
+                .start()
+                .aisle("     ", "     ", "  m  ", "     ", "     ")
+                .aisle("  #  ", "  #  ", "##d##", "  #  ", "  #  ")
+                .aisle("  #  ", "     ", "#   #", "     ", "  #  ")
+                .aisle("     ", "     ", "     ", "     ", "     ")
+                .aisle("     ", "     ", "     ", "     ", "     ")
+                .where('#', BlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BLOCK)))
+                .where('m', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
+                .where('d', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
+                .build();
     }
-
-    @NotNull
-    private static BlockPattern getBuild(BuildType type) {
-        switch (type) {
-            case MULTIBLOCK -> {
-                return BlockPatternBuilder
-                        .start()
-                        .aisle("     ", "     ", "  m  ", "     ", "     ")
-                        .aisle("  #  ", "  #  ", "##d##", "  #  ", "  #  ")
-                        .aisle("  #  ", "     ", "#   #", "     ", "  #  ")
-                        .aisle("     ", "     ", "     ", "     ", "     ")
-                        .aisle("     ", "     ", "     ", "     ", "     ")
-                        .where('#', BlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BLOCK)))
-                        .where('m', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
-                        .where('d', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
-                        .build();
-            }
-            case ORE -> {
-                return BlockPatternBuilder
-                        .start()
-                        .aisle("m")
-                        .aisle("d")
-                        .where('m', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
-                        .where('d', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
-                        .build();
-            }
-        }
-
-        return BlockPatternBuilder.start().build();
+    @Nonnull
+    public static Stream<BlockPos> getBlocksIn(AABB bounds) {
+        return BlockPos.betweenClosedStream(bounds.contract(1, 1, 1));
     }
 }
