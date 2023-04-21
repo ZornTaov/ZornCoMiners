@@ -7,11 +7,13 @@ import io.netty.handler.codec.EncoderException;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zornco.miners.ZornCoMiners;
 
 public class MinerRecipeSerializer implements RecipeSerializer<MinerRecipe> {
+    @SuppressWarnings("NullableProblems")
     @Override
     public MinerRecipe fromJson(@NotNull ResourceLocation recipeId, @NotNull JsonObject json) {
         ZornCoMiners.LOGGER.debug("Beginning deserialization of recipe: {}", recipeId.toString());
@@ -23,12 +25,21 @@ public class MinerRecipeSerializer implements RecipeSerializer<MinerRecipe> {
             return null;
         }
 
-        return parseResult.result()
+        MinerRecipe recipe = parseResult.result()
             .map(r -> {
                 r.setId(recipeId);
                 return r;
             })
             .orElse(null);
+        if (recipe != null)
+        {
+            if (recipe.getResource() != Blocks.AIR) {
+                RecipeRegistration.loadBlocks(recipe, recipe.getResource());
+            } else if(!recipe.getResourceTag().location().getPath().equals("air")) {
+                RecipeRegistration.loadBlockTag(recipe, recipe.getResourceTag());
+            }
+        }
+        return recipe;
     }
 
     @Nullable

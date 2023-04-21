@@ -1,35 +1,23 @@
 package org.zornco.miners;
 
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.profiling.jfr.event.WorldLoadFinishedEvent;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -40,7 +28,6 @@ import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.common.recipe.FakeInventory;
 import org.zornco.miners.common.recipe.MinerRecipe;
 import org.zornco.miners.common.recipe.RecipeRegistration;
-import org.zornco.miners.datagen.RecipeGenerator;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
@@ -62,7 +49,6 @@ public class ZornCoMiners
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::enqueueIMC);
-        forgeEventBus.addListener(this::recipeLoad);
 
         Registration.init(modEventBus);
         RecipeRegistration.init(modEventBus);
@@ -117,19 +103,4 @@ public class ZornCoMiners
             TheOneProbeCompat.sendIMC();
     }
 
-    public void recipeLoad(TickEvent.LevelTickEvent event) {
-        if (load)
-            return;
-        load = true;
-
-        Level level = event.level;
-
-        for (MinerRecipe recipe : level.getRecipeManager().getRecipesFor(RecipeRegistration.MINER_RECIPE.get(), FakeInventory.INSTANCE, level)) {
-            if (recipe.getResource() != Blocks.AIR) {
-                RecipeRegistration.loadBlock(recipe, recipe.getResource());
-            } else if(!recipe.getResourceTag().location().getPath().equals("air")) {
-                RecipeRegistration.loadBlockTag(recipe, recipe.getResourceTag());
-            }
-        }
-    }
 }

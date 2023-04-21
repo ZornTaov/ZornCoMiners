@@ -1,0 +1,11 @@
+{
+  "type": "zorncominers:miner",
+  "tierMinimum": 2,
+  "resourceTag": "forge:fences/wooden",
+  "outputs": [
+    {
+      "id": "minecraft:stick",
+      "Count": 1
+    }
+  ]
+}
