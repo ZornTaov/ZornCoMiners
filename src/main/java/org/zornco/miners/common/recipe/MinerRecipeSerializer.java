@@ -31,7 +31,14 @@ public class MinerRecipeSerializer implements RecipeSerializer<MinerRecipe> {
                 return r;
             })
             .orElse(null);
-
+        if (recipe != null)
+        {
+//            if (recipe.getResource() != Blocks.AIR) {
+//                RecipeRegistration.loadBlocks(recipe, recipe.getResource());
+//            } else if (!recipe.getResourceTag().location().getPath().equals("air")) {
+//                RecipeRegistration.loadBlockTag(recipe, recipe.getResourceTag());
+//            }
+        }
         return recipe;
     }
 
