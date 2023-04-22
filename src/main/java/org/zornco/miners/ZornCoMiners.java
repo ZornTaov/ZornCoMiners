@@ -65,7 +65,7 @@ public class ZornCoMiners
             BlockPos frontBlock = pos.relative(facing, 1);
             BlockState frontState = level.getBlockState(frontBlock);
 
-            if (!frontState.isAir() && frontState.getValue(CropBlock.AGE) == CropBlock.MAX_AGE) {
+            if (!frontState.isAir() && frontState.hasProperty(CropBlock.AGE) && frontState.getValue(CropBlock.AGE) == CropBlock.MAX_AGE) {
                 level.destroyBlock(frontBlock, true);
                 level.addDestroyBlockEffect(frontBlock, frontState);
                 itemStack.setDamageValue(itemStack.getDamageValue() - 1);

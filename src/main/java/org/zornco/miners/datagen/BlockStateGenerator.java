@@ -2,8 +2,8 @@ package org.zornco.miners.datagen;
 
 import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.model.generators.BlockModelBuilder;
 import net.minecraftforge.client.model.generators.BlockStateProvider;
-import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.data.ExistingFileHelper;
 import org.zornco.miners.common.core.Registration;
@@ -29,5 +29,11 @@ public class BlockStateGenerator extends BlockStateProvider {
         ModelFile.ExistingModelFile model = models().getExistingFile(new ResourceLocation(ZornCoMiners.MOD_ID, "drill"));
         directionalBlock(Registration.DRILL_BLOCK.get(), model);
         simpleBlockItem(Registration.DRILL_BLOCK.get(), model);
+
+        BlockModelBuilder block_model = models().cubeAll("example_block", new ResourceLocation("minecraft", "block/netherrack"));
+        block_model.texture("particle", new ResourceLocation("minecraft", "block/netherrack"));
+        block_model.renderType(mcLoc("cutout"));
+
+        simpleBlock(Registration.RENDERABLE_BLOCK.get(), block_model);
     }
 }

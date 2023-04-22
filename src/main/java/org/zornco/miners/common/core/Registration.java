@@ -16,9 +16,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.zornco.miners.ZornCoMiners;
 import org.zornco.miners.common.block.DrillBlock;
+import org.zornco.miners.common.block.RenderableBlock;
 import org.zornco.miners.common.block.MinerBlock;
 import org.zornco.miners.common.item.TestPadItem;
 import org.zornco.miners.common.tile.MinerTile;
+import org.zornco.miners.common.tile.RenderableTile;
 
 import javax.annotation.Nonnull;
 
@@ -51,6 +53,8 @@ public class Registration {
         BLOCKS.register("miner_block", () -> new MinerBlock(baseProperty));
     public static final RegistryObject<DrillBlock> DRILL_BLOCK =
         BLOCKS.register("drill", () -> new DrillBlock(baseProperty));
+    public static final RegistryObject<RenderableBlock> RENDERABLE_BLOCK =
+        BLOCKS.register("renderblock", () -> new RenderableBlock());
     // ================================================================================================================
     //    ITEM BLOCKS
     // ================================================================================================================
@@ -73,6 +77,11 @@ public class Registration {
         TILES.register("energy_controller", () ->
             BlockEntityType.Builder.of(MinerTile::new, MINER_BLOCK.get()
             ).build(null));
+
+    public static final RegistryObject<BlockEntityType<RenderableTile>> RENDERABLE_TILE =
+            TILES.register("rendertile", () ->
+                    BlockEntityType.Builder.of(RenderableTile::new, RENDERABLE_BLOCK.get()
+                    ).build(null));
 
     public static void init(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
