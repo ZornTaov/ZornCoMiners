@@ -13,7 +13,7 @@ import org.zornco.miners.common.core.Registration;
 public class ClientRegistration {
     @SubscribeEvent
     public static void regRenderer(final EntityRenderersEvent.RegisterRenderers evt) {
-        evt.registerBlockEntityRenderer((BlockEntityType) Registration.RENDERABLE_TILE.get(), BasicBlockStateRenderer::new);
+        evt.registerBlockEntityRenderer(Registration.RENDERABLE_TILE.get(), BasicBlockStateRenderer::new);
         //evt.registerBlockEntityRenderer(Registration.MINER_TILE.get(), EnergyControllerTileRenderer::new);
     }
 }

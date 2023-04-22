@@ -16,7 +16,7 @@ public class BasicBlockStateRenderer<T extends BlockEntity> implements BlockEnti
     @Override
     public void render(BlockEntity pBlockEntity, float pPartialTick, PoseStack pPoseStack, MultiBufferSource pBufferSource, int pPackedLight, int pPackedOverlay) {
         if (pBlockEntity instanceof IBlockStateRenderable renderable) {
-            blockRenderDispatcher.renderSingleBlock(renderable.getBlockState(), pPoseStack, pBufferSource, pPackedLight, pPackedOverlay, renderable.getBSModelData(), renderable.getBSRenderType());
+            blockRenderDispatcher.renderSingleBlock(renderable.getBlockStateForRender(), pPoseStack, pBufferSource, pPackedLight, pPackedOverlay, renderable.getBSModelData(), renderable.getBSRenderType());
             renderable.renderAdditional(pPartialTick, pPoseStack, pBufferSource, pPackedLight, pPackedOverlay);
         }
     }

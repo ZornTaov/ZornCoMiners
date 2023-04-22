@@ -13,7 +13,7 @@ public class RenderableTile extends BlockEntity implements IBlockStateRenderable
         super(Registration.RENDERABLE_TILE.get(), pPos, pBlockState);
     }
     @Override
-    public BlockState getBlockState() {
+    public BlockState getBlockStateForRender() {
         return Blocks.IRON_BLOCK.defaultBlockState();
     }
 

@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.data.ModelData;
 
 public interface IBlockStateRenderable {
-    BlockState getBlockState();
+    BlockState getBlockStateForRender();
 
     default ModelData getBSModelData() {
         return ModelData.EMPTY;
