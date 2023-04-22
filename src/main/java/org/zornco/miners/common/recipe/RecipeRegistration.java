@@ -1,5 +1,6 @@
 package org.zornco.miners.common.recipe;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -9,6 +10,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +27,8 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import org.zornco.miners.ZornCoMiners;
 
 import java.util.HashMap;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = ZornCoMiners.MOD_ID)
@@ -52,26 +56,54 @@ public class RecipeRegistration {
 
     @SubscribeEvent
     public static void recipeReload(AddReloadListenerEvent event) {
-        event.addListener(new ResourceManagerReloadListener() {
-            @Override
-            public void onResourceManagerReload(ResourceManager pResourceManager) {
-                CACHED_MINER_RECIPE.clear();
-                event.getServerResources().getRecipeManager().getAllRecipesFor(MINER_RECIPE.get()).forEach(recipe -> {
-                    if (recipe.getResource() != Blocks.AIR) {
-                        RecipeRegistration.loadBlocks(recipe, recipe.getResource());
-                    } else if (!recipe.getResourceTag().location().getPath().equals("air")) {
-                        RecipeRegistration.loadBlockTag(recipe, recipe.getResourceTag());
-                    }
-                });
-            }
-        });
+        CACHED_MINER_RECIPE.clear();
     }
 
-    public static MinerRecipe getRecipe(BlockState block) {
-        if (CACHED_MINER_RECIPE.containsKey(block))
-            return CACHED_MINER_RECIPE.get(block);
+    public static MinerRecipe getRecipe(BlockState block, Level level) {
+        if (!CACHED_MINER_RECIPE.containsKey(block))
+        {
+            // refresh recipe list
+            // this version filters out the recipe, but seems.... excessive because it still checks ALL blockstates anyways
+//            Optional<MinerRecipe> recipe = level.getRecipeManager().getAllRecipesFor(MINER_RECIPE.get()).stream().filter(minerRecipe -> {
+//                if (minerRecipe.getResource() != Blocks.AIR) {
+//                    return minerRecipe.getResource().getStateDefinition().getPossibleStates().contains(block);
+//                } else if (!minerRecipe.getResourceTag().location().getPath().equals("air")) {
+//
+//                    ITagManager<Block> tags = ForgeRegistries.BLOCKS.tags();
+//                    if (tags != null) {
+//                        Optional<Block> first = tags.getTag(minerRecipe.getResourceTag()).stream().filter(block1 ->
+//                            block1.getStateDefinition().getPossibleStates().contains(block)).findFirst();
+//                        return first.isPresent();
+//                    }
+//                    return false;
+//                }
+//                return false;
+//            }).findFirst();
+//            if (recipe.isEmpty()) return null;
+//
+//            if (recipe.get().getResource() != Blocks.AIR) {
+//                RecipeRegistration.loadBlocks(recipe.get(), recipe.get().getResource());
+//            } else if (!recipe.get().getResourceTag().location().getPath().equals("air")) {
+//                RecipeRegistration.loadBlockTag(recipe.get(), recipe.get().getResourceTag());
+//            }
 
-        return null;
+
+
+            level.getRecipeManager().getAllRecipesFor(MINER_RECIPE.get()).forEach(recipe -> {
+                if (recipe.getResource() != Blocks.AIR) {
+                    RecipeRegistration.loadBlocks(recipe, recipe.getResource());
+                } else if (!recipe.getResourceTag().location().getPath().equals("air")) {
+                    RecipeRegistration.loadBlockTag(recipe, recipe.getResourceTag());
+                }
+            });
+            return CACHED_MINER_RECIPE.get(block);
+        }
+        else
+        {
+            return CACHED_MINER_RECIPE.get(block);
+        }
+
+        //return null;
     }
 
     public static void loadBlockTag(MinerRecipe recipe, TagKey<Block> blockTagKey) {
@@ -83,7 +115,9 @@ public class RecipeRegistration {
     }
 
     public static void loadBlockState(MinerRecipe recipe, BlockState state) {
-        CACHED_MINER_RECIPE.put(state, recipe);
+
+        if (!CACHED_MINER_RECIPE.containsKey(state))
+            CACHED_MINER_RECIPE.put(state, recipe);
     }
 
     public static void loadBlocks(MinerRecipe recipe, Block block) {

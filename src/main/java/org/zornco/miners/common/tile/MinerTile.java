@@ -130,7 +130,7 @@ public class MinerTile extends BlockEntity {
         if (tile.ticksRunning % speed != 0) return;
         BlockPos center = pos.below(3);
         var blockStates = getBlocksIn(
-            AABB.ofSize(new Vec3(center.getX(), center.getY(), center.getZ()), 3, 3, 3)
+            AABB.ofSize(new Vec3(center.getX(), center.getY(), center.getZ()), 3, 3, 3).move(0.5,0.5,0.5)
         ).map(bp -> new BlockInWorld(level, bp, true)).filter(biw -> !biw.getState().isAir()).toList();
         if(blockStates.isEmpty()) return;
 
@@ -138,9 +138,9 @@ public class MinerTile extends BlockEntity {
             BlockInWorld randBlockState = blockStates.get(level.getRandom().nextInt(blockStates.size()));
             tile.recipe = switch (state.getValue(TYPE))
             {
-                case MULTIBLOCK -> RecipeRegistration.getRecipe(randBlockState.getState());
+                case MULTIBLOCK -> RecipeRegistration.getRecipe(randBlockState.getState(), level);
 
-                case ORE -> RecipeRegistration.getRecipe(level.getBlockState(pos.below(1)));
+                case ORE -> RecipeRegistration.getRecipe(level.getBlockState(pos.below(1)), level);
             };
             if(tile.recipe != null) break;
         }
