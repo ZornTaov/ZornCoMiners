@@ -16,11 +16,12 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import org.zornco.miners.ZornCoMiners;
 import org.zornco.miners.common.block.DrillBlock;
-import org.zornco.miners.common.block.RenderableBlock;
+import org.zornco.miners.common.block.DummyBlock;
 import org.zornco.miners.common.block.MinerBlock;
+import org.zornco.miners.common.item.HammerItem;
 import org.zornco.miners.common.item.TestPadItem;
 import org.zornco.miners.common.tile.MinerTile;
-import org.zornco.miners.common.tile.RenderableTile;
+import org.zornco.miners.common.tile.DummyTile;
 
 import javax.annotation.Nonnull;
 
@@ -53,8 +54,8 @@ public class Registration {
         BLOCKS.register("miner_block", () -> new MinerBlock(baseProperty));
     public static final RegistryObject<DrillBlock> DRILL_BLOCK =
         BLOCKS.register("drill", () -> new DrillBlock(baseProperty));
-    public static final RegistryObject<RenderableBlock> RENDERABLE_BLOCK =
-        BLOCKS.register("renderblock", () -> new RenderableBlock());
+    public static final RegistryObject<DummyBlock> DUMMY_BLOCK =
+        BLOCKS.register("dummyblock", () -> new DummyBlock());
     // ================================================================================================================
     //    ITEM BLOCKS
     // ================================================================================================================
@@ -69,6 +70,10 @@ public class Registration {
             new BlockItem(DRILL_BLOCK.get(),
                 new Item.Properties().tab(Registration.ITEM_GROUP))
         );
+    public static final RegistryObject<HammerItem> HAMMER_ITEM =
+        ITEMS.register("hammer", () ->
+            new HammerItem(new Item.Properties().tab(Registration.ITEM_GROUP))
+        );
     // ================================================================================================================
     //    TILE ENTITIES
     // ================================================================================================================
@@ -78,9 +83,9 @@ public class Registration {
             BlockEntityType.Builder.of(MinerTile::new, MINER_BLOCK.get()
             ).build(null));
 
-    public static final RegistryObject<BlockEntityType<RenderableTile>> RENDERABLE_TILE =
-            TILES.register("rendertile", () ->
-                    BlockEntityType.Builder.of(RenderableTile::new, RENDERABLE_BLOCK.get()
+    public static final RegistryObject<BlockEntityType<DummyTile>> DUMMY_TILE =
+            TILES.register("dummytile", () ->
+                    BlockEntityType.Builder.of(DummyTile::new, DUMMY_BLOCK.get()
                     ).build(null));
 
     public static void init(IEventBus modEventBus) {

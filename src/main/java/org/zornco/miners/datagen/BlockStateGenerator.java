@@ -34,6 +34,6 @@ public class BlockStateGenerator extends BlockStateProvider {
         block_model.texture("particle", new ResourceLocation("minecraft", "block/netherrack"));
         block_model.renderType(mcLoc("cutout"));
 
-        simpleBlock(Registration.RENDERABLE_BLOCK.get(), block_model);
+        simpleBlock(Registration.DUMMY_BLOCK.get(), block_model);
     }
 }

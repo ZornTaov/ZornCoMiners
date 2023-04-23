@@ -195,10 +195,9 @@ dependencies {
     implementation fg.deobf("curse.maven:pipez-443900:${pipez_version}")
 
     compileOnly "mekanism:Mekanism:${mekanism_version}:api"
-    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}")// core
-    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:generators")// Mekanism: Generators
 
-    
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}") // core
+    runtimeOnly fg.deobf("mekanism:Mekanism:${mekanism_version}:generators") // Mekanism: Generators
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
