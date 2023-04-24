@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
@@ -14,6 +15,7 @@ import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -210,10 +212,10 @@ public class MultiBlockPattern {
             return this.cache.getUnchecked(this.frontTopLeft.offset(MultiBlockPattern.translateAndRotate(this.getForwards(), this.getUp(), pPalmOffset, pThumbOffset, pFingerOffset)));
         }
 
-        public Map<BlockPos, MultiBlockInWorld> getTypes(MultiBlockInWorldType type)
+        public List<MultiBlockInWorld> getTypes(MultiBlockInWorldType type)
         {
             return switch (type){
-                case NOT_INCLUDED -> new HashMap<>();
+                case NOT_INCLUDED -> List.of();
                 case SLAVE -> slaves;
                 case MASTER -> masters;
             };
