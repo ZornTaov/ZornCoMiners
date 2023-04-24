@@ -6,5 +6,5 @@ import net.minecraft.world.level.block.state.pattern.BlockPattern;
 
 // This is used to form A MB
 public abstract class MutliblockFormer {
-    abstract void Form(Level level, BlockPos origin, BlockPattern pattern); // do we pass pattern?
+    abstract void Form(Level level, BlockPos origin, MultiBlockPattern pattern); // do we pass pattern?
 }

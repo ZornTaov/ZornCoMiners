@@ -11,8 +11,6 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -26,9 +24,7 @@ import org.slf4j.Logger;
 import org.zornco.miners.common.compat.TheOneProbeCompat;
 import org.zornco.miners.common.config.Configuration;
 import org.zornco.miners.common.core.Registration;
-import org.zornco.miners.common.multiblock.MultiblockManager;
-import org.zornco.miners.common.recipe.FakeInventory;
-import org.zornco.miners.common.recipe.MinerRecipe;
+import org.zornco.miners.common.multiblock.MultiBlockManager;
 import org.zornco.miners.common.recipe.RecipeRegistration;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
@@ -54,7 +50,7 @@ public class ZornCoMiners
 
         Registration.init(modEventBus);
         RecipeRegistration.init(modEventBus);
-        MultiblockManager.init();
+        MultiBlockManager.init();
 
         // Configuration
         ModLoadingContext mlCtx = ModLoadingContext.get();

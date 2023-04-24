@@ -8,13 +8,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.pattern.BlockPattern;
-import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
 import net.minecraft.world.level.block.state.predicate.BlockPredicate;
-import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
@@ -28,22 +25,23 @@ import org.zornco.miners.common.core.BuildType;
 import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.common.block.MinerBlock;
 import org.zornco.miners.common.capability.EnergyCap;
+import org.zornco.miners.common.multiblock.MultiBlockInWorld;
+import org.zornco.miners.common.multiblock.MultiBlockInWorldType;
+import org.zornco.miners.common.multiblock.MultiBlockPattern;
+import org.zornco.miners.common.multiblock.MultiBlockPatternBuilder;
 import org.zornco.miners.common.recipe.MinerRecipe;
 import org.zornco.miners.common.recipe.RecipeRegistration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static org.zornco.miners.common.block.MinerBlock.TYPE;
 
 public class MinerTile extends BlockEntity {
-    private static final HashMap<BuildType, BlockPattern> patterns = new HashMap<>();
-    private static BlockPattern pattern = getPattern(); // the current pattern we are using.
+    private final MultiBlockPattern pattern = getPattern(); // the current pattern we are using.
     private int minTier = -1;
 
     EnergyCap energyStorage;
@@ -119,7 +117,7 @@ public class MinerTile extends BlockEntity {
             if (state.getValue(TYPE) == BuildType.MULTIBLOCK) {
                 // do multiblock validation
                 // TODO allow for any number of ores, this changes yield per operation maybe?
-                BlockPattern.BlockPatternMatch match = pattern.find(level, pos) ;
+                MultiBlockPattern.MultiBlockPatternMatch match = find(level, pos, tile) ;
                 level.setBlockAndUpdate(pos, state.setValue(MinerBlock.VALID, match != null));
             }
         }
@@ -202,12 +200,12 @@ public class MinerTile extends BlockEntity {
         // TODO if config is true, remove random/furthest oreblock after X uses
     }
 
-    private static BlockPattern.BlockPatternMatch find(Level level, BlockPos pos, @NotNull MinerTile tile) {
-        BlockPattern.BlockPatternMatch match = tile.pattern.find(level, pos);
+    private static MultiBlockPattern.MultiBlockPatternMatch find(Level level, BlockPos pos, @NotNull MinerTile tile) {
+        MultiBlockPattern.MultiBlockPatternMatch match = tile.pattern.find(level, pos);
         if (match == null)
             return null;
 
-        BlockInWorld block = match.getBlock(match.getDepth() / 2, 0, match.getWidth() / 2);
+        BlockInWorld block = match.getTypes(MultiBlockInWorldType.MASTER).get(0);
         if (block.getEntity() == tile)
             return match;
 
@@ -215,17 +213,17 @@ public class MinerTile extends BlockEntity {
     }
 
     @NotNull
-    private static BlockPattern getPattern() {
-        return BlockPatternBuilder
+    private static MultiBlockPattern getPattern() {
+        return MultiBlockPatternBuilder
                 .start()
                 .aisle("     ", "     ", "  m  ", "     ", "     ")
                 .aisle("  #  ", "  #  ", "##d##", "  #  ", "  #  ")
                 .aisle("  #  ", "     ", "#   #", "     ", "  #  ")
                 .aisle("     ", "     ", "     ", "     ", "     ")
                 .aisle("     ", "     ", "     ", "     ", "     ")
-                .where('#', BlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BLOCK)))
-                .where('m', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
-                .where('d', BlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
+                .where('#', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BLOCK), MultiBlockInWorldType.SLAVE))
+                .where('m', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get()), MultiBlockInWorldType.MASTER))
+                .where('d', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get()), MultiBlockInWorldType.SLAVE))
                 .build();
     }
     @Nonnull
