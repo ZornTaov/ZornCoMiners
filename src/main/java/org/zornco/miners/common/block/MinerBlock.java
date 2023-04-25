@@ -67,7 +67,7 @@ public class MinerBlock extends DummyBlock {
     @Override
     public @NotNull InteractionResult use(@NotNull BlockState pState, Level pLevel, @NotNull BlockPos pPos,
                                           @NotNull Player pPlayer, @NotNull InteractionHand pHand, @NotNull BlockHitResult pHit) {
-        if (!pLevel.isClientSide())
+        if (!pLevel.isClientSide() && !pState.getValue(MB_SLAVE))
         {
             if (pLevel.getBlockEntity(pPos) instanceof MinerTile tile)
             {
@@ -83,12 +83,13 @@ public class MinerBlock extends DummyBlock {
                     }
                 };
                 NetworkHooks.openScreen((ServerPlayer) pPlayer, containerProvider, tile.getBlockPos());
+                return InteractionResult.SUCCESS;
             } else {
                 throw new IllegalStateException("Our named container provider is missing!");
             }
         }
 
 
-        return InteractionResult.SUCCESS;
+        return super.use(pState,pLevel,pPos,pPlayer,pHand,pHit);
     }
 }
