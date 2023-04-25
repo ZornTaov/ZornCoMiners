@@ -1,6 +1,8 @@
 package org.zornco.miners.common.core;
 
+import io.netty.util.Attribute;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
@@ -9,6 +11,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.Material;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.DeferredRegister;
@@ -18,6 +21,7 @@ import org.zornco.miners.ZornCoMiners;
 import org.zornco.miners.common.block.DrillBlock;
 import org.zornco.miners.common.block.DummyBlock;
 import org.zornco.miners.common.block.MinerBlock;
+import org.zornco.miners.common.block.MinerContainer;
 import org.zornco.miners.common.item.HammerItem;
 import org.zornco.miners.common.item.TestPadItem;
 import org.zornco.miners.common.tile.MinerTile;
@@ -34,6 +38,7 @@ public class Registration {
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ZornCoMiners.MOD_ID);
     private static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ZornCoMiners.MOD_ID);
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ZornCoMiners.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, ZornCoMiners.MOD_ID);
 
     // ================================================================================================================
     //   PROPERTIES
@@ -81,12 +86,25 @@ public class Registration {
             BlockEntityType.Builder.of(MinerTile::new, MINER_BLOCK.get()
             ).build(null));
 
+//    public static final RegistryObject<BlockEntityType<DummyTile>> DUMMY_TILE =
+//            TILES.register("dummytile", () ->
+//                    BlockEntityType.Builder.of(DummyTile::new, DUMMY_BLOCK.get()
+//                    ).build(null));
+    // ================================================================================================================
+    //    CONTAINERS
+    // ================================================================================================================
+    public static final RegistryObject<MenuType<MinerContainer>> MINER_CONTAINER = CONTAINERS.register("miner",
+        () -> IForgeMenuType.create((windowId, inv, data) -> new MinerContainer(windowId, data.readBlockPos(), inv, inv.player)));
+    // ================================================================================================================
+    //    INIT
+    // ================================================================================================================
 
     public static void init(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         TILES.register(modEventBus);
         ENTITIES.register(modEventBus);
+        CONTAINERS.register(modEventBus);
     }
     public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(ZornCoMiners.MOD_ID) {
         @Nonnull

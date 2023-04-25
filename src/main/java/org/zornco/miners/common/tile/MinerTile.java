@@ -34,7 +34,24 @@ public class MinerTile extends DummyTile {
     private int minTier = -1;
 
     EnergyCap energyStorage;
-    ItemStackHandler storage = new ItemStackHandler(1);
+    ItemStackHandler storage = new ItemStackHandler(7){
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            return slot == 0 && stack.getItem() == Registration.DRILL_BLOCK.get().asItem() || slot < 8;
+        }
+
+        @Override
+        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+            if (slot == 0 && stack.getItem() != Registration.DRILL_BLOCK.get().asItem())
+                return stack;
+            return super.insertItem(slot, stack, simulate);
+        }
+    };
 
     LazyOptional<EnergyCap> energy;
     LazyOptional<IItemHandler> item = LazyOptional.of(() -> storage);
@@ -43,7 +60,12 @@ public class MinerTile extends DummyTile {
 
     public MinerTile(BlockPos p_155229_, BlockState p_155230_) {
         super(Registration.MINER_TILE.get(), p_155229_, p_155230_);
-        energyStorage = new EnergyCap(10000);
+        energyStorage = new EnergyCap(10000){
+            @Override
+            protected void onEnergyChanged() {
+                setChanged();
+            }
+        };
         this.energy = LazyOptional.of(() -> this.energyStorage);
     }
 
@@ -57,6 +79,9 @@ public class MinerTile extends DummyTile {
         super.load(tag);
         this.ticksRunning = tag.getInt("ticks");
         energyStorage.deserializeNBT(tag.get("energy"));
+        if (tag.contains("inventory")) {
+            storage.deserializeNBT(tag.getCompound("inventory"));
+        }
     }
 
     @Override
@@ -64,6 +89,7 @@ public class MinerTile extends DummyTile {
         super.saveAdditional(tag);
         tag.putInt("ticks", this.ticksRunning);
         tag.put("energy", energyStorage.serializeNBT());
+        tag.put("inventory", storage.serializeNBT());
     }
 
     @Nonnull
@@ -82,6 +108,7 @@ public class MinerTile extends DummyTile {
     public void invalidateCaps() {
         super.invalidateCaps();
         energy.invalidate();
+        item.invalidate();
     }
 
     public static void tickCommon(Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull MinerTile tile) {
@@ -91,6 +118,8 @@ public class MinerTile extends DummyTile {
         if(!(tile.getOriginalBlockState().getBlock() == Registration.MINER_BLOCK.get())) return;
 
         tile.ticksRunning++;
+
+        if (tile.storage.getStackInSlot(0).getItem() != Registration.DRILL_BLOCK.get().asItem()) return;
 
         // TODO change with tier?
         int speed = 10; // 2op/1s
@@ -122,26 +151,27 @@ public class MinerTile extends DummyTile {
             tile.energyStorage.extractEnergy(Configuration.energyUsedPerTick(), true) != Configuration.energyUsedPerTick()) return;
 
         BlockEntity tileAbove = level.getBlockEntity(pos.above());
-        if(tileAbove == null) return;
-        LazyOptional<IItemHandler> cap = tileAbove.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN);
         AtomicBoolean pushed = new AtomicBoolean(false);
+        if(tileAbove != null) {
+            LazyOptional<IItemHandler> cap = tileAbove.getCapability(ForgeCapabilities.ITEM_HANDLER, Direction.DOWN);
 
-        cap.ifPresent(storage -> {
-            for (ItemStack output : tile.recipe.codecOutputs()) {
-                ItemStack stack = output.copy();
-                if (stack.isEmpty())
-                    return; // bad recipe!
-                //ItemStack stack = new ItemStack(blockUnder.getBlock().asItem());
-                // TODO incorporate percentage outputs?
-                for (int i = 0; i < storage.getSlots(); i++) {
-                    if (storage.isItemValid(i, stack) && storage.insertItem(i, stack, true).isEmpty()) {
-                        storage.insertItem(i, stack, false);
-                        pushed.set(true);
-                        break;
+            cap.ifPresent(storage -> {
+                for (ItemStack output : tile.recipe.codecOutputs()) {
+                    ItemStack stack = output.copy();
+                    if (stack.isEmpty())
+                        return; // bad recipe!
+                    //ItemStack stack = new ItemStack(blockUnder.getBlock().asItem());
+                    // TODO incorporate percentage outputs?
+                    for (int i = 0; i < storage.getSlots(); i++) {
+                        if (storage.isItemValid(i, stack) && storage.insertItem(i, stack, true).isEmpty()) {
+                            storage.insertItem(i, stack, false);
+                            pushed.set(true);
+                            break;
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
 
         if (!pushed.get()) {
             for (ItemStack output : tile.recipe.codecOutputs()) {
@@ -150,7 +180,7 @@ public class MinerTile extends DummyTile {
                     return; // bad recipe!
                 //ItemStack stack = new ItemStack(blockUnder.getBlock().asItem());
                 // TODO incorporate percentage outputs?
-                for (int i = 0; i < tile.storage.getSlots(); i++) {
+                for (int i = 1; i < tile.storage.getSlots(); i++) {
                     if (tile.storage.isItemValid(i, stack) && tile.storage.insertItem(i, stack, true).isEmpty()) {
                         tile.storage.insertItem(i, stack, false);
                         pushed.set(true);

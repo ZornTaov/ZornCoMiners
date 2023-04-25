@@ -21,6 +21,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
+import org.zornco.miners.client.ClientRegistration;
 import org.zornco.miners.common.compat.TheOneProbeCompat;
 import org.zornco.miners.common.config.Configuration;
 import org.zornco.miners.common.core.Registration;
@@ -46,6 +47,7 @@ public class ZornCoMiners
 
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(ClientRegistration::init);
         modEventBus.addListener(this::enqueueIMC);
 
         Registration.init(modEventBus);
@@ -91,8 +93,6 @@ public class ZornCoMiners
     private void commonSetup(final FMLCommonSetupEvent event)
     {
         // Some common setup code
-        LOGGER.info("HELLO FROM COMMON SETUP");
-        LOGGER.info("DIRT BLOCK >> {}", ForgeRegistries.BLOCKS.getKey(Blocks.DIRT));
         MultiBlockManager.init();
     }
 
