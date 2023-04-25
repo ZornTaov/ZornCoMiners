@@ -30,10 +30,6 @@ public class BlockStateGenerator extends BlockStateProvider {
         directionalBlock(Registration.DRILL_BLOCK.get(), model);
         simpleBlockItem(Registration.DRILL_BLOCK.get(), model);
 
-        BlockModelBuilder block_model = models().cubeAll("example_block", new ResourceLocation("minecraft", "block/netherrack"));
-        block_model.texture("particle", new ResourceLocation("minecraft", "block/netherrack"));
-        block_model.renderType(mcLoc("cutout"));
 
-        simpleBlock(Registration.DUMMY_BLOCK.get(), block_model);
     }
 }

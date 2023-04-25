@@ -6,12 +6,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.block.state.pattern.BlockPattern;
-import net.minecraft.world.level.block.state.predicate.BlockPredicate;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.capabilities.Capability;
@@ -19,29 +16,21 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 import org.zornco.miners.common.config.Configuration;
-import org.zornco.miners.common.core.BuildType;
 import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.common.block.MinerBlock;
 import org.zornco.miners.common.capability.EnergyCap;
-import org.zornco.miners.common.multiblock.MultiBlockInWorld;
-import org.zornco.miners.common.multiblock.MultiBlockInWorldType;
-import org.zornco.miners.common.multiblock.MultiBlockPattern;
-import org.zornco.miners.common.multiblock.MultiBlockPatternBuilder;
 import org.zornco.miners.common.recipe.MinerRecipe;
 import org.zornco.miners.common.recipe.RecipeRegistration;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import static org.zornco.miners.common.block.MinerBlock.TYPE;
 
-public class MinerTile extends BlockEntity {
-    private final MultiBlockPattern pattern = getPattern(); // the current pattern we are using.
+public class MinerTile extends DummyTile {
     private int minTier = -1;
 
     EnergyCap energyStorage;
@@ -79,17 +68,6 @@ public class MinerTile extends BlockEntity {
 
     @Nonnull
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
-    }
-
-    @Override
-    public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    @Nonnull
-    @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, final @Nullable Direction side) {
         if (Configuration.useEnergy() && cap == ForgeCapabilities.ENERGY)
             return energy.cast();
@@ -109,18 +87,10 @@ public class MinerTile extends BlockEntity {
     public static void tickCommon(Level level, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nonnull MinerTile tile) {
         if(level == null) return;
         if(level.isClientSide()) return;
-        tile.ticksRunning++;
-        int validationSpeed = 20; // validate every second
-        // only do validation once every so often
+        if(!tile.getFormed()) return;
+        if(!(tile.getOriginalBlockState().getBlock() == Registration.MINER_BLOCK.get())) return;
 
-        if (tile.ticksRunning % validationSpeed == 0) {
-            if (state.getValue(TYPE) == BuildType.MULTIBLOCK) {
-                // do multiblock validation
-                // TODO allow for any number of ores, this changes yield per operation maybe?
-                MultiBlockPattern.MultiBlockPatternMatch match = find(level, pos, tile) ;
-                level.setBlockAndUpdate(pos, state.setValue(MinerBlock.VALID, match != null));
-            }
-        }
+        tile.ticksRunning++;
 
         // TODO change with tier?
         int speed = 10; // 2op/1s
@@ -146,11 +116,6 @@ public class MinerTile extends BlockEntity {
         // get out early if recipe isn't set
         if (tile.recipe == null)
             return;
-
-        // only run if structure is valid
-        if (!level.getBlockState(pos).getValue(MinerBlock.VALID)) {
-            return;
-        }
 
         // only do operation if power is supplied and config is enabled
         if (Configuration.useEnergy() &&
@@ -200,32 +165,6 @@ public class MinerTile extends BlockEntity {
         // TODO if config is true, remove random/furthest oreblock after X uses
     }
 
-    private static MultiBlockPattern.MultiBlockPatternMatch find(Level level, BlockPos pos, @NotNull MinerTile tile) {
-        MultiBlockPattern.MultiBlockPatternMatch match = tile.pattern.find(level, pos);
-        if (match == null)
-            return null;
-
-        BlockInWorld block = match.getTypes(MultiBlockInWorldType.MASTER).get(0);
-        if (block.getEntity() == tile)
-            return match;
-
-        return match;
-    }
-
-    @NotNull
-    private static MultiBlockPattern getPattern() {
-        return MultiBlockPatternBuilder
-                .start()
-                .aisle("     ", "     ", "  m  ", "     ", "     ")
-                .aisle("  #  ", "  #  ", "##d##", "  #  ", "  #  ")
-                .aisle("  #  ", "     ", "#   #", "     ", "  #  ")
-                .aisle("     ", "     ", "     ", "     ", "     ")
-                .aisle("     ", "     ", "     ", "     ", "     ")
-                .where('#', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BLOCK), MultiBlockInWorldType.SLAVE))
-                .where('m', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Registration.MINER_BLOCK.get()), MultiBlockInWorldType.MASTER))
-                .where('d', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Registration.DRILL_BLOCK.get()), MultiBlockInWorldType.SLAVE))
-                .build();
-    }
     @Nonnull
     public static Stream<BlockPos> getBlocksIn(AABB bounds) {
         return BlockPos.betweenClosedStream(bounds.contract(1, 1, 1));

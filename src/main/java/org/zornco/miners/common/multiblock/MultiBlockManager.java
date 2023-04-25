@@ -1,28 +1,34 @@
 package org.zornco.miners.common.multiblock;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.state.predicate.BlockPredicate;
+import org.zornco.miners.common.core.Registration;
+import org.zornco.miners.common.multiblock.former.MinerFormer;
+import org.zornco.miners.common.multiblock.former.MultiBlockFormer;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockPattern;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockPatternBuilder;
+
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class MultiBlockManager {
-    private static final HashMap<MultiBlockPattern, MutliblockFormer> STRUCTURES = new HashMap<>();
+    private static final HashMap<MultiBlockPattern, MultiBlockFormer> STRUCTURES = new HashMap<>();
 
-    public static void load(MultiBlockPattern pattern, MutliblockFormer former) {
+    public static void load(MultiBlockPattern pattern, MultiBlockFormer former) {
         STRUCTURES.put(pattern, former);
     }
 
     public static void handle(Level level, BlockPos pos) {
-        for (Map.Entry<MultiBlockPattern, MutliblockFormer> entry : STRUCTURES.entrySet()) {
+        for (Map.Entry<MultiBlockPattern, MultiBlockFormer> entry : STRUCTURES.entrySet()) {
             MultiBlockPattern key = entry.getKey();
-            MutliblockFormer former = entry.getValue();
+            MultiBlockFormer former = entry.getValue();
             if (key.find(level, pos) != null) {
-                former.Form(level, pos, key);
+                former.form(level, pos,  key.find(level, pos));
                 break;
             }
         }
@@ -30,14 +36,18 @@ public class MultiBlockManager {
 
 
     public static void init() {
-        load(MultiBlockPatternBuilder.start()
-                .aisle("a")
-                .aisle("b")
-                .aisle("a")
-                .where('a', MultiBlockInWorld.hasState(BlockPredicate.forBlock(Blocks.IRON_BLOCK), MultiBlockInWorldType.SLAVE))
-                .where('b', MultiBlockInWorld.hasState((state) -> state.getValue(HopperBlock.FACING) == Direction.DOWN, MultiBlockInWorldType.MASTER))
+        load(MultiBlockPatternBuilder
+                .start()
+                .aisle("     ", "     ", "  m  ", "     ", "     ")
+                .aisle("  #  ", "  #  ", "##d##", "  #  ", "  #  ")
+                .aisle("  #  ", "     ", "#   #", "     ", "  #  ")
+                .aisle("     ", "     ", "     ", "     ", "     ")
+                .aisle("     ", "     ", "     ", "     ", "     ")
+                .where('#', MultiBlockInWorld.hasState(MultiBlockInWorldType.SLAVE, BlockPredicate.forBlock(Blocks.IRON_BLOCK)))
+                .where('m', MultiBlockInWorld.hasState(MultiBlockInWorldType.MASTER, BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
+                .where('d', MultiBlockInWorld.hasState(MultiBlockInWorldType.SLAVE, BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
                 .build(),
-                new CubeFormer()
+                new MinerFormer()
         );
     }
 

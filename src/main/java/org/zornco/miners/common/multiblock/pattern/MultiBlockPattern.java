@@ -1,25 +1,21 @@
-package org.zornco.miners.common.multiblock;
+package org.zornco.miners.common.multiblock.pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import org.jetbrains.annotations.NotNull;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
 
 public class MultiBlockPattern {
@@ -151,6 +147,9 @@ public class MultiBlockPattern {
     public static class MultiBlockPatternMatch {
         private final List<MultiBlockInWorld> masters = new ArrayList<>();
         private final List<MultiBlockInWorld> slaves = new ArrayList<>();
+        private final List<MultiBlockInWorld> all = new ArrayList<>();
+
+        private final MultiBlockInWorld master;
         private final BlockPos frontTopLeft;
         private final Direction forwards;
         private final Direction up;
@@ -167,21 +166,29 @@ public class MultiBlockPattern {
             this.width = pWidth;
             this.height = pHeight;
             this.depth = pDepth;
+
+            MultiBlockInWorld pMaster = null;
+
             for(int i = 0; i < this.getWidth(); ++i) {
                 for(int j = 0; j < this.getHeight(); ++j) {
                     for (int k = 0; k < this.getDepth(); ++k) {
                         BlockPos pos = new BlockPos(i, j, k);
                         MultiBlockInWorld blockInWorld = getBlock(pos).setOffset(pos);
-                        if(blockInWorld.type == MultiBlockInWorldType.SLAVE && !slaves.contains(pos))
+                        if(blockInWorld.getType() == MultiBlockInWorldType.SLAVE && !slaves.contains(pos))
                             slaves.add(blockInWorld);
-                        if(blockInWorld.type == MultiBlockInWorldType.MASTER && !masters.contains(pos))
+                        if(blockInWorld.getType() == MultiBlockInWorldType.MASTER && !masters.contains(pos)) {
                             masters.add(blockInWorld);
+                            pMaster = blockInWorld;
+                        }
+                        if (blockInWorld.getType() != MultiBlockInWorldType.NOT_INCLUDED && !all.contains(blockInWorld))
+                            all.add(blockInWorld);
                     }
                 }
             }
+            this.master = pMaster;
         }
 
-        public BlockPos getFrontTopLeft() {
+        public BlockPos getOriginInWorld() {
             return this.frontTopLeft;
         }
 
@@ -212,13 +219,21 @@ public class MultiBlockPattern {
             return this.cache.getUnchecked(this.frontTopLeft.offset(MultiBlockPattern.translateAndRotate(this.getForwards(), this.getUp(), pPalmOffset, pThumbOffset, pFingerOffset)));
         }
 
-        public List<MultiBlockInWorld> getTypes(MultiBlockInWorldType type)
+        public MultiBlockInWorld getMaster() {
+            return this.master;
+        }
+
+        public List<MultiBlockInWorld> getType(MultiBlockInWorldType type)
         {
             return switch (type){
                 case NOT_INCLUDED -> List.of();
                 case SLAVE -> slaves;
                 case MASTER -> masters;
             };
+        }
+
+        public List<MultiBlockInWorld> getAllTypes() {
+            return this.all;
         }
 
         public String toString() {

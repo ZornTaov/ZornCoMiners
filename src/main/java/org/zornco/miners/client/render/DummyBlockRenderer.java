@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraftforge.client.model.data.ModelData;
 import org.zornco.miners.common.tile.DummyTile;
 
-public class DummyBlockRenderer implements BlockEntityRenderer<DummyTile> {
+public class DummyBlockRenderer<T extends DummyTile> implements BlockEntityRenderer<T> {
     private final BlockEntityRendererProvider.Context context;
     public DummyBlockRenderer(BlockEntityRendererProvider.Context context) {
         this.context = context;

@@ -1,11 +1,9 @@
-package org.zornco.miners.common.multiblock;
+package org.zornco.miners.common.multiblock.pattern;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import net.minecraft.world.level.block.state.pattern.BlockInWorld;
-import net.minecraft.world.level.block.state.pattern.BlockPattern;
-import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
+import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,9 +20,7 @@ public class MultiBlockPatternBuilder {
     private int width;
 
     private MultiBlockPatternBuilder() {
-        this.lookup.put(' ', (p_187549_) -> {
-            return true;
-        });
+        this.where(' ', MultiBlockInWorld.hasState(MultiBlockInWorldType.NOT_INCLUDED, (state -> {return true;})));
     }
 
     /**

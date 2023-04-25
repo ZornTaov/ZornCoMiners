@@ -16,9 +16,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zornco.miners.common.core.BuildType;
 import org.zornco.miners.common.core.Registration;
+import org.zornco.miners.common.tile.DummyTile;
 import org.zornco.miners.common.tile.MinerTile;
 
-public class MinerBlock extends BaseEntityBlock {
+public class MinerBlock extends DummyBlock {
     public static final BooleanProperty VALID = BooleanProperty.create("valid");
     public static final EnumProperty<BuildType> TYPE = EnumProperty.create("type", BuildType.class);
 
@@ -29,6 +30,7 @@ public class MinerBlock extends BaseEntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(VALID, TYPE);
     }
 
@@ -44,7 +46,10 @@ public class MinerBlock extends BaseEntityBlock {
         return createTickerHelper(type, Registration.MINER_TILE.get(), MinerTile::tickCommon);
     }
 
-    public @NotNull RenderShape getRenderShape(@NotNull BlockState p_60550_) {
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState state) {
+        if (state.getValue(DummyBlock.MB_SLAVE))
+            return RenderShape.INVISIBLE;
+
         return RenderShape.MODEL;
     }
 }

@@ -5,7 +5,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -17,14 +16,13 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
 import org.zornco.miners.common.tile.DummyTile;
 
-public class DummyBlock extends Block implements EntityBlock {
+public abstract class DummyBlock extends BaseEntityBlock {
     public static final BooleanProperty MB_SLAVE = BooleanProperty.create("mbslave");
 
-    public DummyBlock() {
-        super(BlockBehaviour.Properties.of(Material.WOOL).noOcclusion().dynamicShape());
+    public DummyBlock(Properties properties) {
+        super(properties);
         registerDefaultState(getStateDefinition().any().setValue(MB_SLAVE, true));
     }
 
@@ -45,14 +43,6 @@ public class DummyBlock extends Block implements EntityBlock {
         return ItemStack.EMPTY;
     }
 
-
-
-    @Nullable
-    @Override
-    public BlockEntity newBlockEntity(BlockPos pPos, BlockState pState) {
-        return new DummyTile(pPos, pState);
-    }
-
     @Override
     public RenderShape getRenderShape(BlockState pState) {
         return RenderShape.ENTITYBLOCK_ANIMATED;
@@ -63,9 +53,8 @@ public class DummyBlock extends Block implements EntityBlock {
         BlockEntity entity = pLevel.getBlockEntity(pPos);
         boolean state = entity == null ? false : true;
 
-        if (!pLevel.isClientSide && entity instanceof DummyTile tile) {
+        if (!pLevel.isClientSide && entity instanceof DummyTile tile)
             tile.markBlockForRenderUpdate();
-        }
 
         return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
     }

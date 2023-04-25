@@ -50,7 +50,6 @@ public class ZornCoMiners
 
         Registration.init(modEventBus);
         RecipeRegistration.init(modEventBus);
-        MultiBlockManager.init();
 
         // Configuration
         ModLoadingContext mlCtx = ModLoadingContext.get();
@@ -94,6 +93,7 @@ public class ZornCoMiners
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
         LOGGER.info("DIRT BLOCK >> {}", ForgeRegistries.BLOCKS.getKey(Blocks.DIRT));
+        MultiBlockManager.init();
     }
 
     public void enqueueIMC(final InterModEnqueueEvent event) {

@@ -51,11 +51,9 @@ public class Registration {
     //    BLOCKS
     // ================================================================================================================
     public static final RegistryObject<MinerBlock> MINER_BLOCK =
-        BLOCKS.register("miner_block", () -> new MinerBlock(baseProperty));
+        BLOCKS.register("miner_block", () -> new MinerBlock(baseProperty.noOcclusion().dynamicShape()));
     public static final RegistryObject<DrillBlock> DRILL_BLOCK =
         BLOCKS.register("drill", () -> new DrillBlock(baseProperty));
-    public static final RegistryObject<DummyBlock> DUMMY_BLOCK =
-        BLOCKS.register("dummyblock", () -> new DummyBlock());
     // ================================================================================================================
     //    ITEM BLOCKS
     // ================================================================================================================
@@ -83,10 +81,6 @@ public class Registration {
             BlockEntityType.Builder.of(MinerTile::new, MINER_BLOCK.get()
             ).build(null));
 
-    public static final RegistryObject<BlockEntityType<DummyTile>> DUMMY_TILE =
-            TILES.register("dummytile", () ->
-                    BlockEntityType.Builder.of(DummyTile::new, DUMMY_BLOCK.get()
-                    ).build(null));
 
     public static void init(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);

@@ -1,7 +1,6 @@
-package org.zornco.miners.common.multiblock;
+package org.zornco.miners.common.multiblock.pattern;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
@@ -9,17 +8,17 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import java.util.function.Predicate;
 
 public class MultiBlockInWorld extends BlockInWorld {
-    MultiBlockInWorldType type;
-    BlockPos offset;
+    private MultiBlockInWorldType type;
+    private BlockPos offset;
     public MultiBlockInWorld(LevelReader pLevel, BlockPos pPos, boolean pLoadChunks) {
         super(pLevel, pPos, pLoadChunks);
     }
 
 
-    public static Predicate<MultiBlockInWorld> hasState(Predicate<BlockState> pState, MultiBlockInWorldType type) {
+    public static Predicate<MultiBlockInWorld> hasState(MultiBlockInWorldType type, Predicate<BlockState> pState) {
 
         return (multiBlockInWorld) -> {
-            multiBlockInWorld.type = type;
+            multiBlockInWorld.setType(type);
             return pState.test(multiBlockInWorld.getState());
         };
     }
@@ -28,11 +27,20 @@ public class MultiBlockInWorld extends BlockInWorld {
         this.type = type;
         return this;
     }
-    public MultiBlockInWorld setOffset(BlockPos off)
-    {
+
+    public MultiBlockInWorldType getType() {
+        return this.type;
+    }
+
+    public MultiBlockInWorld setOffset(BlockPos off) {
         this.offset = off;
         return this;
     }
+
+    public BlockPos getOffset() {
+        return this.offset;
+    }
+
     public boolean equals(Object pOther) {
         if (this == pOther) {
             return true;
