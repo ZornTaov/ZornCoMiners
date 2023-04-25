@@ -5,6 +5,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.zornco.miners.common.block.DummyBlock;
+import org.zornco.miners.common.block.MinerBlock;
 import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;

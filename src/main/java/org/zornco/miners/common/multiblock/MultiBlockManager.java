@@ -27,8 +27,9 @@ public class MultiBlockManager {
         for (Map.Entry<MultiBlockPattern, MultiBlockFormer> entry : STRUCTURES.entrySet()) {
             MultiBlockPattern key = entry.getKey();
             MultiBlockFormer former = entry.getValue();
-            if (key.find(level, pos) != null) {
-                former.form(level, pos,  key.find(level, pos));
+            var match = key.find(level, pos);
+            if (match != null) {
+                former.form(level, pos,  match);
                 break;
             }
         }

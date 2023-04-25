@@ -174,9 +174,9 @@ public class MultiBlockPattern {
                     for (int k = 0; k < this.getDepth(); ++k) {
                         BlockPos pos = new BlockPos(i, j, k);
                         MultiBlockInWorld blockInWorld = getBlock(pos).setOffset(pos);
-                        if(blockInWorld.getType() == MultiBlockInWorldType.SLAVE && !slaves.contains(pos))
+                        if(blockInWorld.getType() == MultiBlockInWorldType.SLAVE && !slaves.contains(blockInWorld))
                             slaves.add(blockInWorld);
-                        if(blockInWorld.getType() == MultiBlockInWorldType.MASTER && !masters.contains(pos)) {
+                        if(blockInWorld.getType() == MultiBlockInWorldType.MASTER && !masters.contains(blockInWorld)) {
                             masters.add(blockInWorld);
                             pMaster = blockInWorld;
                         }
