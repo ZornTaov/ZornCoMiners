@@ -3,7 +3,6 @@ package org.zornco.miners.common.tile;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,11 +15,10 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
 import org.zornco.miners.common.config.Configuration;
 import org.zornco.miners.common.core.Registration;
-import org.zornco.miners.common.block.MinerBlock;
 import org.zornco.miners.common.capability.EnergyCap;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 import org.zornco.miners.common.recipe.MinerRecipe;
 import org.zornco.miners.common.recipe.RecipeRegistration;
 
@@ -29,33 +27,14 @@ import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-import static org.zornco.miners.common.block.MinerBlock.TYPE;
-
 public class MinerTile extends DummyTile {
     private int minTier = -1;
 
     EnergyCap energyStorage;
-    ItemStackHandler storage = new ItemStackHandler(7){
-        @Override
-        protected void onContentsChanged(int slot) {
-            setChanged();
-        }
-
-        @Override
-        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return slot == 0 && stack.getItem() == Registration.DRILL_BLOCK.get().asItem() || slot < 8;
-        }
-
-        @Override
-        public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            if (slot == 0 && stack.getItem() != Registration.DRILL_BLOCK.get().asItem())
-                return stack;
-            return super.insertItem(slot, stack, simulate);
-        }
-    };
+    ItemStackHandler itemStorage;
 
     LazyOptional<EnergyCap> energy;
-    LazyOptional<IItemHandler> item = LazyOptional.of(() -> storage);
+    LazyOptional<IItemHandler> item;
     public int ticksRunning = 0;
     private MinerRecipe recipe;
 
@@ -68,6 +47,9 @@ public class MinerTile extends DummyTile {
             }
         };
         this.energy = LazyOptional.of(() -> this.energyStorage);
+
+        itemStorage = new ItemStackHandler(7);
+        this.item = LazyOptional.of(() -> this.itemStorage);
     }
 
     @Override
@@ -79,30 +61,34 @@ public class MinerTile extends DummyTile {
     public void load(@Nonnull CompoundTag tag) {
         super.load(tag);
         this.ticksRunning = tag.getInt("ticks");
-        energyStorage.deserializeNBT(tag.get("energy"));
-        if (tag.contains("inventory")) {
-            storage.deserializeNBT(tag.getCompound("inventory"));
-        }
+        if (tag.contains("energy"))
+            energyStorage.deserializeNBT(tag.get("energy"));
+        if (tag.contains("inventory"))
+            itemStorage.deserializeNBT(tag.getCompound("inventory"));
     }
 
     @Override
     protected void saveAdditional(@Nonnull CompoundTag tag) {
         super.saveAdditional(tag);
         tag.putInt("ticks", this.ticksRunning);
-        tag.put("energy", energyStorage.serializeNBT());
-        tag.put("inventory", storage.serializeNBT());
+        if (energy != null)
+            tag.put("energy", energyStorage.serializeNBT());
+        if (energy != null)
+            tag.put("inventory", itemStorage.serializeNBT());
     }
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, final @Nullable Direction side) {
+        if (this.getMultiBlockType() != MultiBlockInWorldType.MASTER) return LazyOptional.empty();
+
         if (Configuration.useEnergy() && cap == ForgeCapabilities.ENERGY)
             return energy.cast();
 
         if (cap == ForgeCapabilities.ITEM_HANDLER)
             return item.cast();
 
-        return super.getCapability(cap, side);
+        return LazyOptional.empty();
     }
 
     @Override
@@ -120,7 +106,7 @@ public class MinerTile extends DummyTile {
 
         tile.ticksRunning++;
 
-        if (tile.storage.getStackInSlot(0).getItem() != Registration.DRILL_BLOCK.get().asItem()) return;
+        if (tile.itemStorage.getStackInSlot(0).getItem() != Registration.DRILL_BLOCK.get().asItem()) return;
 
         // TODO change with tier?
         int speed = 10; // 2op/1s
@@ -134,12 +120,7 @@ public class MinerTile extends DummyTile {
 
         for (int i = 0; i < 100; i++) {
             BlockInWorld randBlockState = blockStates.get(level.getRandom().nextInt(blockStates.size()));
-            tile.recipe = switch (state.getValue(TYPE))
-            {
-                case MULTIBLOCK -> RecipeRegistration.getRecipe(randBlockState.getState(), level);
-
-                case ORE -> RecipeRegistration.getRecipe(level.getBlockState(pos.below(1)), level);
-            };
+            tile.recipe = RecipeRegistration.getRecipe(randBlockState.getState(), level);
             if(tile.recipe != null) break;
         }
 
@@ -181,9 +162,9 @@ public class MinerTile extends DummyTile {
                     return; // bad recipe!
                 //ItemStack stack = new ItemStack(blockUnder.getBlock().asItem());
                 // TODO incorporate percentage outputs?
-                for (int i = 1; i < tile.storage.getSlots(); i++) {
-                    if (tile.storage.isItemValid(i, stack) && tile.storage.insertItem(i, stack, true).isEmpty()) {
-                        tile.storage.insertItem(i, stack, false);
+                for (int i = 1; i < tile.itemStorage.getSlots(); i++) {
+                    if (tile.itemStorage.isItemValid(i, stack) && tile.itemStorage.insertItem(i, stack, true).isEmpty()) {
+                        tile.itemStorage.insertItem(i, stack, false);
                         pushed.set(true);
                         break;
                     }

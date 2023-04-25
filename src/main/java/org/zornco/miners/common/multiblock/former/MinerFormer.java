@@ -16,11 +16,13 @@ import java.util.List;
 public class MinerFormer extends MultiBlockFormer {
     @Override
     public void form(Level level, BlockPos origin, MultiBlockPattern.MultiBlockPatternMatch pattern) {
-        pattern.getAllTypes().forEach(multiBlockInWorld -> formDummy(level, multiBlockInWorld));
+        MultiBlockInWorld master = pattern.getMaster();
+
+        pattern.getAllTypes().forEach(multiBlockInWorld -> formDummy(level, multiBlockInWorld, master.getPos()));
         pattern.getAllTypes().forEach(multiBlockInWorld -> finishFormingDummy(level, multiBlockInWorld));
     }
 
-    public void formDummy(Level level, MultiBlockInWorld multiBlockInWorld) {
+    public void formDummy(Level level, MultiBlockInWorld multiBlockInWorld, BlockPos master) {
         BlockState original = multiBlockInWorld.getState();
         BlockState dummy = Registration.MINER_BLOCK.get().defaultBlockState().setValue(DummyBlock.MB_SLAVE, multiBlockInWorld.getType() == MultiBlockInWorldType.SLAVE);
 
@@ -28,6 +30,7 @@ public class MinerFormer extends MultiBlockFormer {
 
         if (level.getBlockEntity(multiBlockInWorld.getPos()) instanceof DummyTile tile) {
             tile.setOriginalBlockState(original);
+            tile.setController(master);
             tile.setMultiBlockType(multiBlockInWorld.getType());
             tile.setChanged();
         }

@@ -30,7 +30,7 @@ public class MinerContainer extends AbstractContainerMenu {
 
     public MinerContainer(int pContainerId, BlockPos pos, Inventory inv, Player player) {
         super(Registration.MINER_CONTAINER.get(), pContainerId);
-        blockEntity = (MinerTile)player.getCommandSenderWorld().getBlockEntity(pos);
+        blockEntity = (MinerTile) player.getCommandSenderWorld().getBlockEntity(pos);
         this.playerEntity = player;
         this.playerInventory = new InvWrapper(inv);
 
@@ -85,7 +85,7 @@ public class MinerContainer extends AbstractContainerMenu {
     }
     public boolean getStatus()
     {
-        return blockEntity.getBlockState().getValue(MinerBlock.VALID);
+        return blockEntity.getFormed();
     }
     public int getEnergy() {
         return blockEntity.getCapability(ForgeCapabilities.ENERGY).map(IEnergyStorage::getEnergyStored).orElse(0);

@@ -31,18 +31,18 @@ import org.zornco.miners.common.tile.MinerTile;
 
 public class MinerBlock extends DummyBlock {
     public static final String SCREEN_MINER = "screen.miner";
-    public static final BooleanProperty VALID = BooleanProperty.create("valid");
+
+    @Deprecated(forRemoval = true)
     public static final EnumProperty<BuildType> TYPE = EnumProperty.create("type", BuildType.class);
 
     public MinerBlock(Properties p_49224_) {
         super(p_49224_);
-        this.registerDefaultState(this.stateDefinition.any().setValue(VALID, false).setValue(TYPE, BuildType.MULTIBLOCK));
+        this.registerDefaultState(this.stateDefinition.any());
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(VALID, TYPE);
     }
 
     @Nullable

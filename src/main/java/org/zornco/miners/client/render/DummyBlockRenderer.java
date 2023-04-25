@@ -29,8 +29,7 @@ public class DummyBlockRenderer<T extends DummyTile> implements BlockEntityRende
     }
 
     @Override
-    public void render(DummyTile be, float pPartialTick, PoseStack matrix,
-                       @NotNull MultiBufferSource buffer, int pPackedLight, int pPackedOverlay) {
+    public void render(DummyTile be, float pPartialTick, PoseStack matrix, @NotNull MultiBufferSource buffer, int pPackedLight, int pPackedOverlay) {
 //        context.getBlockRenderDispatcher().renderSingleBlock(dummyTile.getOriginalBlockState(),
 //            pPoseStack, pBufferSource, pPackedLight, pPackedOverlay, ModelData.EMPTY, RenderType.cutout());
         Level level = be.getLevel();

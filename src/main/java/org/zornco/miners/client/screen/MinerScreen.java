@@ -1,4 +1,4 @@
-package org.zornco.miners.client;
+package org.zornco.miners.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;

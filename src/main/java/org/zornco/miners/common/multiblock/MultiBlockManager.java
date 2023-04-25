@@ -45,7 +45,7 @@ public class MultiBlockManager {
                 .aisle("     ", "     ", "     ", "     ", "     ")
                 .aisle("     ", "     ", "     ", "     ", "     ")
                 .where('#', MultiBlockInWorld.hasState(MultiBlockInWorldType.SLAVE, BlockPredicate.forBlock(Blocks.IRON_BLOCK)))
-                .where('m', MultiBlockInWorld.hasState(MultiBlockInWorldType.MASTER, BlockPredicate.forBlock(Registration.MINER_BLOCK.get())))
+                .where('m', MultiBlockInWorld.hasState(MultiBlockInWorldType.MASTER, BlockPredicate.forBlock(Blocks.NETHERITE_BLOCK)))
                 .where('d', MultiBlockInWorld.hasState(MultiBlockInWorldType.SLAVE, BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
                 .build(),
                 new MinerFormer()
