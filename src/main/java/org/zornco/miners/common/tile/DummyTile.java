@@ -101,6 +101,10 @@ public abstract class DummyTile extends BlockEntity {
         return formed;
     }
 
+    public boolean isMaster() {
+        return getMultiBlockType() == MultiBlockInWorldType.MASTER;
+    }
+
     public void setController(BlockPos controller) {
         this.controller = controller;
     }
@@ -149,6 +153,7 @@ public abstract class DummyTile extends BlockEntity {
         this.type = MBData.getBoolean("isMaster") ? MultiBlockInWorldType.MASTER : MultiBlockInWorldType.SLAVE;
         if (MBData.contains(CONTROLLER_NBT))
             this.controller = NbtUtils.readBlockPos(MBData.getCompound(CONTROLLER_NBT));
+
         ListTag list = MBData.getList(SLAVES_MB, CompoundTag.TAG_LIST);
         BLOCK_POS_LIST_CODEC.decode(NbtOps.INSTANCE, list).resultOrPartial(ZornCoMiners.LOGGER::error)
             .ifPresent(listTagPair -> SLAVES.addAll(listTagPair.getFirst()));

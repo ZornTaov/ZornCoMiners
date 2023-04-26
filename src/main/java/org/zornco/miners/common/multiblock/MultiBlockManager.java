@@ -5,8 +5,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.predicate.BlockPredicate;
 import org.zornco.miners.common.core.Registration;
-import org.zornco.miners.common.multiblock.former.MinerFormer;
-import org.zornco.miners.common.multiblock.former.MultiBlockFormer;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockPattern;
@@ -17,22 +15,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MultiBlockManager {
-    private static final HashMap<MultiBlockPattern, MultiBlockFormer> STRUCTURES = new HashMap<>();
+    private static final HashMap<MultiBlockPattern, IMultiblockFormer> STRUCTURES = new HashMap<>();
 
-    public static void load(MultiBlockPattern pattern, MultiBlockFormer former) {
+    public static void load(MultiBlockPattern pattern, IMultiblockFormer former) {
         STRUCTURES.put(pattern, former);
     }
 
     public static void handle(Level level, BlockPos pos) {
-        for (Map.Entry<MultiBlockPattern, MultiBlockFormer> entry : STRUCTURES.entrySet()) {
-            MultiBlockPattern key = entry.getKey();
-            MultiBlockFormer former = entry.getValue();
-            var match = key.find(level, pos);
-            if (match != null) {
-                former.form(level, pos,  match);
-                break;
-            }
-        }
+        var structurePattern = STRUCTURES.keySet().stream()
+                .filter(pattern -> pattern.find(level, pos) != null)
+                .findFirst();
+
+        structurePattern.ifPresent(multiBlockPattern -> {
+            IMultiblockFormer former = STRUCTURES.get(multiBlockPattern);
+            former.form(level, pos, multiBlockPattern.find(level, pos));
+        });
     }
 
 
@@ -48,7 +45,7 @@ public class MultiBlockManager {
                 .where('m', MultiBlockInWorld.hasState(MultiBlockInWorldType.MASTER, BlockPredicate.forBlock(Blocks.NETHERITE_BLOCK)))
                 .where('d', MultiBlockInWorld.hasState(MultiBlockInWorldType.SLAVE, BlockPredicate.forBlock(Registration.DRILL_BLOCK.get())))
                 .build(),
-                new MinerFormer()
+                Registration.MINER_BLOCK.get()
         );
     }
 

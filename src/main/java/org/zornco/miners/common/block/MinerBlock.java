@@ -22,9 +22,15 @@ import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zornco.miners.common.core.Registration;
+import org.zornco.miners.common.multiblock.IMultiblockFormer;
+import org.zornco.miners.common.multiblock.MultiBlockManager;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockPattern;
+import org.zornco.miners.common.tile.DummyTile;
 import org.zornco.miners.common.tile.MinerTile;
 
-public class MinerBlock extends DummyBlock {
+public class MinerBlock extends DummyBlock implements IMultiblockFormer {
     public static final String SCREEN_MINER = "screen.miner";
 
     public MinerBlock(Properties p_49224_) {
@@ -59,29 +65,66 @@ public class MinerBlock extends DummyBlock {
     @Override
     public @NotNull InteractionResult use(@NotNull BlockState pState, Level pLevel, @NotNull BlockPos pPos,
                                           @NotNull Player pPlayer, @NotNull InteractionHand pHand, @NotNull BlockHitResult pHit) {
-        if (!pLevel.isClientSide() && !pState.getValue(MB_SLAVE))
-        {
-            if (pLevel.getBlockEntity(pPos) instanceof MinerTile tile)
-            {
-                MenuProvider containerProvider = new MenuProvider() {
-                    @Override
-                    public @NotNull Component getDisplayName() {
-                        return Component.translatable(SCREEN_MINER);
-                    }
+        if (!pState.getValue(MB_SLAVE)) {
+            if (!pLevel.isClientSide) {
+                if (pLevel.getBlockEntity(pPos) instanceof MinerTile tile) {
+                    MenuProvider containerProvider = new MenuProvider() {
+                        @Override
+                        public @NotNull Component getDisplayName() {
+                            return Component.translatable(SCREEN_MINER);
+                        }
 
-                    @Override
-                    public AbstractContainerMenu createMenu(int windowId, @NotNull Inventory playerInventory, @NotNull Player playerEntity) {
-                        return new MinerContainer(windowId, pPos, playerInventory, playerEntity);
-                    }
-                };
-                NetworkHooks.openScreen((ServerPlayer) pPlayer, containerProvider, tile.getBlockPos());
-                return InteractionResult.SUCCESS;
+                        @Override
+                        public AbstractContainerMenu createMenu(int windowId, @NotNull Inventory playerInventory, @NotNull Player playerEntity) {
+                            return new MinerContainer(windowId, pPos, playerInventory, playerEntity);
+                        }
+                    };
+                    NetworkHooks.openScreen((ServerPlayer) pPlayer, containerProvider, tile.getBlockPos());
+                    return InteractionResult.SUCCESS;
+                } else {
+                    throw new IllegalStateException("Our named container provider is missing!");
+                }
             } else {
-                throw new IllegalStateException("Our named container provider is missing!");
+                return InteractionResult.SUCCESS;
             }
         }
 
 
-        return super.use(pState,pLevel,pPos,pPlayer,pHand,pHit);
+        return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+    }
+
+    @Override
+    public void form(Level level, BlockPos origin, MultiBlockPattern.MultiBlockPatternMatch pattern) {
+        MultiBlockInWorld master = pattern.getMaster();
+        if (master == null) return; // Cant continue as there is no 'master'
+
+        pattern.getAllTypes().forEach(multiBlockInWorld -> formDummy(level, multiBlockInWorld, master.getPos()));
+        pattern.getAllTypes().forEach(multiBlockInWorld -> finishFormingDummy(level, multiBlockInWorld));
+
+        if(level.getBlockEntity(master.getPos()) instanceof DummyTile tile)
+        {
+            tile.getSlaves().addAll(pattern.getAllTypes().stream().map(MultiBlockInWorld::getPos).toList());
+        }
+    }
+
+    public void formDummy(Level level, MultiBlockInWorld multiBlockInWorld, BlockPos master) {
+        BlockState original = multiBlockInWorld.getState();
+        BlockState dummy = Registration.MINER_BLOCK.get().defaultBlockState().setValue(DummyBlock.MB_SLAVE, multiBlockInWorld.getType() == MultiBlockInWorldType.SLAVE);
+
+        level.setBlock(multiBlockInWorld.getPos(), dummy, Block.UPDATE_ALL);
+
+        if (level.getBlockEntity(multiBlockInWorld.getPos()) instanceof DummyTile tile) {
+            tile.setOriginalBlockState(original);
+            tile.setController(master);
+            tile.setMultiBlockType(multiBlockInWorld.getType());
+
+            tile.setChanged();
+        }
+    }
+
+    private void finishFormingDummy(Level level, MultiBlockInWorld multiBlockInWorld) {
+        if (level.getBlockEntity(multiBlockInWorld.getPos()) instanceof DummyTile tile) {
+            tile.setFormed(true);
+        }
     }
 }
