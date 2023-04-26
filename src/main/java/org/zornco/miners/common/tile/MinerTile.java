@@ -36,7 +36,7 @@ public class MinerTile extends DummyTile {
     LazyOptional<EnergyCap> energy;
     LazyOptional<IItemHandler> item;
     public int ticksRunning = 0;
-    private MinerRecipe recipe;
+    private MinerRecipe recipe = MinerRecipe.EMPTY;
 
     public MinerTile(BlockPos p_155229_, BlockState p_155230_) {
         super(Registration.MINER_TILE.get(), p_155229_, p_155230_);
@@ -102,7 +102,7 @@ public class MinerTile extends DummyTile {
         if(level == null) return;
         if(level.isClientSide()) return;
         if(!tile.getFormed()) return;
-        if(!(tile.getOriginalBlockState().getBlock() == Registration.MINER_BLOCK.get())) return;
+        if(!(tile.getMultiBlockType() == MultiBlockInWorldType.MASTER)) return;
 
         tile.ticksRunning++;
 
@@ -112,20 +112,22 @@ public class MinerTile extends DummyTile {
         int speed = 10; // 2op/1s
         // only do operation once every so often
         if (tile.ticksRunning % speed != 0) return;
-        BlockPos center = pos.below(3);
-        var blockStates = getBlocksIn(
-            AABB.ofSize(new Vec3(center.getX(), center.getY(), center.getZ()), 3, 3, 3).move(0.5,0.5,0.5)
-        ).map(bp -> new BlockInWorld(level, bp, true)).filter(biw -> !biw.getState().isAir()).toList();
-        if(blockStates.isEmpty()) return;
 
-        for (int i = 0; i < 100; i++) {
-            BlockInWorld randBlockState = blockStates.get(level.getRandom().nextInt(blockStates.size()));
-            tile.recipe = RecipeRegistration.getRecipe(randBlockState.getState(), level);
-            if(tile.recipe != null) break;
-        }
+        BlockPos center = pos.below(3);
+        // Get all valid recipes that we can utilize!
+        RecipeRegistration.loadRecipes(level);
+        var recipesList = getBlocksIn(
+            AABB.ofSize(new Vec3(center.getX(), center.getY(), center.getZ()), 3, 3, 3).move(0.5,0.5,0.5)
+        )
+                .map(level::getBlockState)
+                .filter(RecipeRegistration::hasRecipe)
+                .map(RecipeRegistration::getRecipe).toList();
+
+        if(recipesList.isEmpty()) return;
+        tile.recipe = recipesList.get(level.getRandom().nextInt(recipesList.size()));
 
         // get out early if recipe isn't set
-        if (tile.recipe == null)
+        if (tile.recipe.isEmpty())
             return;
 
         // only do operation if power is supplied and config is enabled

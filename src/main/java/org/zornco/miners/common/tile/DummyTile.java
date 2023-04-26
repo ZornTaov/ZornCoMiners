@@ -112,6 +112,14 @@ public abstract class DummyTile extends BlockEntity {
             tile.updateFormation(getBlockPos());
     }
 
+    public DummyTile getMaster() {
+        if (getMultiBlockType() == MultiBlockInWorldType.MASTER)
+            return this;
+        if (getController() != null && level.getBlockEntity(getController()) instanceof DummyTile tile)
+            return tile;
+
+        return null;
+    }
 
     @Nullable
     @Override

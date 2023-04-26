@@ -20,6 +20,7 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
+import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 import org.zornco.miners.common.tile.DummyTile;
 
 public abstract class DummyBlock extends BaseEntityBlock {
@@ -39,7 +40,11 @@ public abstract class DummyBlock extends BaseEntityBlock {
     @Override
     public void playerWillDestroy(Level pLevel, BlockPos pPos, BlockState pState, Player pPlayer) {
         if (pLevel.getBlockEntity(pPos) instanceof DummyTile tile) {
-            tile.deconstruct();
+            if (tile.getMaster() != null) {
+                tile.getMaster().deconstruct();
+            } else {
+                // TODO: Log this later!
+            }
         }
     }
 

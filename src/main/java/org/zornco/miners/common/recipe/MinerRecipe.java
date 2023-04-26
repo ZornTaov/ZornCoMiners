@@ -19,6 +19,7 @@ import org.zornco.miners.common.core.Codecs;
 import java.util.List;
 
 public class MinerRecipe implements Recipe<FakeInventory> {
+    public static final MinerRecipe EMPTY = new MinerRecipe(null, null, null, 0);
     private ResourceLocation id;
     private final ResourceLocation resource;
     private final String resourceTag;
@@ -114,5 +115,9 @@ public class MinerRecipe implements Recipe<FakeInventory> {
 
     public TagKey<Block> getResourceTag() {
         return TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation(resourceTag));
+    }
+
+    public boolean isEmpty() {
+        return this == EMPTY;
     }
 }
