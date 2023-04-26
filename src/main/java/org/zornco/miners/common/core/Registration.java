@@ -1,6 +1,9 @@
 package org.zornco.miners.common.core;
 
 import io.netty.util.Attribute;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
@@ -29,16 +32,18 @@ import org.zornco.miners.common.tile.DummyTile;
 
 import javax.annotation.Nonnull;
 
-@Mod.EventBusSubscriber(modid = ZornCoMiners.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
+import static org.zornco.miners.ZornCoMiners.MOD_ID;
+
+@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Registration {
     // ================================================================================================================
     //    Registries
     // ================================================================================================================
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, ZornCoMiners.MOD_ID);
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, ZornCoMiners.MOD_ID);
-    private static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, ZornCoMiners.MOD_ID);
-    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, ZornCoMiners.MOD_ID);
-    private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, ZornCoMiners.MOD_ID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> TILES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MOD_ID);
+    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, MOD_ID);
+    private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, MOD_ID);
 
     // ================================================================================================================
     //   PROPERTIES
@@ -106,11 +111,16 @@ public class Registration {
         ENTITIES.register(modEventBus);
         CONTAINERS.register(modEventBus);
     }
-    public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(ZornCoMiners.MOD_ID) {
+    public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(MOD_ID) {
         @Nonnull
         @Override
         public ItemStack makeIcon() {
             return new ItemStack(Registration.TEST_PAD_ITEM.get());
         }
     };
+
+
+    public static class Tags {
+        public static final TagKey<Item> DRILL_SLOT = ItemTags.create(new ResourceLocation(MOD_ID, "drill_slot"));
+    }
 }

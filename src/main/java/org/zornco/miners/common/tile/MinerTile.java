@@ -15,6 +15,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 import org.zornco.miners.common.config.Configuration;
 import org.zornco.miners.common.core.Registration;
 import org.zornco.miners.common.capability.EnergyCap;
@@ -48,7 +49,28 @@ public class MinerTile extends DummyTile {
         };
         this.energy = LazyOptional.of(() -> this.energyStorage);
 
-        itemStorage = new ItemStackHandler(7);
+        itemStorage = new ItemStackHandler(7) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                setChanged();
+            }
+
+            @Override
+            public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+                if (slot == 0 && !stack.is(Registration.Tags.DRILL_SLOT))
+                    return ItemStack.EMPTY;
+
+                return super.insertItem(slot, stack, simulate);
+            }
+
+            @Override
+            public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+                if (slot == 0 && amount != 1)
+                    return ItemStack.EMPTY;
+
+                return super.extractItem(slot, amount, simulate);
+            }
+        };
         this.item = LazyOptional.of(() -> this.itemStorage);
     }
 
