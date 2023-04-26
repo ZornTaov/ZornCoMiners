@@ -153,10 +153,9 @@ public abstract class DummyTile extends BlockEntity {
         this.type = MBData.getBoolean("isMaster") ? MultiBlockInWorldType.MASTER : MultiBlockInWorldType.SLAVE;
         if (MBData.contains(CONTROLLER_NBT))
             this.controller = NbtUtils.readBlockPos(MBData.getCompound(CONTROLLER_NBT));
-
-        ListTag list = MBData.getList(SLAVES_MB, CompoundTag.TAG_LIST);
-        BLOCK_POS_LIST_CODEC.decode(NbtOps.INSTANCE, list).resultOrPartial(ZornCoMiners.LOGGER::error)
-            .ifPresent(listTagPair -> SLAVES.addAll(listTagPair.getFirst()));
+        BLOCK_POS_LIST_CODEC.parse(NbtOps.INSTANCE, MBData.get(SLAVES_MB))
+            .resultOrPartial(ZornCoMiners.LOGGER::error)
+            .ifPresent(SLAVES::addAll);
     }
 
     @Override
@@ -169,8 +168,9 @@ public abstract class DummyTile extends BlockEntity {
         if (controller != null)
             MBData.put(CONTROLLER_NBT, NbtUtils.writeBlockPos(controller));
         tag.put(MB_DATA_NBT, MBData);
-        BLOCK_POS_LIST_CODEC.encodeStart(NbtOps.INSTANCE, SLAVES).resultOrPartial(ZornCoMiners.LOGGER::error)
-            .ifPresent(tag1 -> tag.put(SLAVES_MB, tag1));
+        BLOCK_POS_LIST_CODEC.encodeStart(NbtOps.INSTANCE, SLAVES)
+            .resultOrPartial(ZornCoMiners.LOGGER::error)
+            .ifPresent(tag1 -> MBData.put(SLAVES_MB, tag1));
 //        ListTag list = new ListTag();
 //        getSlaves().forEach(pos -> list.add(NbtUtils.writeBlockPos(pos)));
 //        if (!list.isEmpty())
