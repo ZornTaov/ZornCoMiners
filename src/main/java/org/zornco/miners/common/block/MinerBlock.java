@@ -10,7 +10,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,22 +17,15 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.zornco.miners.common.core.BuildType;
 import org.zornco.miners.common.core.Registration;
-import org.zornco.miners.common.tile.DummyTile;
 import org.zornco.miners.common.tile.MinerTile;
 
 public class MinerBlock extends DummyBlock {
     public static final String SCREEN_MINER = "screen.miner";
-
-    @Deprecated(forRemoval = true)
-    public static final EnumProperty<BuildType> TYPE = EnumProperty.create("type", BuildType.class);
 
     public MinerBlock(Properties p_49224_) {
         super(p_49224_);

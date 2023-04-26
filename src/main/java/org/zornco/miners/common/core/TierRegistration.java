@@ -1,40 +1,51 @@
 package org.zornco.miners.common.core;
 
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.HashMap;
 
+// TODO: Update this to utilize Upgrade Cards/Items
 public class TierRegistration {
     /**
-     * do we want tier x frame to only work with
-     * tier x ore? So t1 ore can only use t1 frame,
-     * not t2 frame or above
+     * Do we want to allow the Tier Card to
+     * mine ores that are at a tier below it
+     *
+     * when set to true tier x ores can only
+     * be mined by tier x cards and not able
+     * to mine lower tier ores.
      *
      * default: false
      */
 
-    public static boolean strictFrameTier = false;
-    public final static HashMap<Block, Integer> TIERS = new HashMap<>();
+    public static boolean strictTiering = false; // Todo: make this a Config option! For Server side
+    public final static HashMap<Item, Integer> TIERS = new HashMap<>();
 
 
     static {
-        TIERS.put(Blocks.IRON_BARS, 1);
-        TIERS.put(Blocks.IRON_BLOCK, 2);
+        TIERS.put(Items.IRON_BARS, 1);
+        TIERS.put(Items.IRON_BLOCK, 2);
     }
 
-    public static int getTierForBlock(Block block) {
-        if (TIERS.containsKey(block)) {
-            return TIERS.get(block);
+    public static int getTierForCard(Item item) {
+        if (TIERS.containsKey(item)) {
+            return TIERS.get(item);
         }
 
         return -1;
     }
 
-    public static boolean isValidForTier(Block block, int tier) {
-        if (strictFrameTier)
-            return getTierForBlock(block) == tier;
+    public static boolean isValidForTier(Item item, int tier) {
+        if (strictTiering)
+            return getTierForCard(item) == tier;
 
-        return getTierForBlock(block) >= tier;
+        return getTierForCard(item) >= tier;
+    }
+
+    public static boolean isValidForTier(ItemStack stack, int tier) {
+        return isValidForTier(stack.getItem(), tier);
     }
 }
