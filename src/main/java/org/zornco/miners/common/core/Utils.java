@@ -14,9 +14,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class Utils {
-    public static final Codec<List<BlockPos>> BLOCK_POS_LIST_CODEC = Codec.list(BlockPos.CODEC);
-    public static final Codec<Direction> DIRECTION_CODEC = Direction.CODEC;//StringRepresentable.fromEnum(Direction::values, Direction::byName);
-    public static final Codec<List<Direction>> DIRECTION_LIST_CODEC = Codec.list(DIRECTION_CODEC);
 
     public static void sendMessage(Player player, String text) {
 

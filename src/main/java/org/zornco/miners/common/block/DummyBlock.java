@@ -67,7 +67,7 @@ public abstract class DummyBlock extends BaseEntityBlock {
     @Override
     public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
         BlockEntity entity = pLevel.getBlockEntity(pPos);
-        boolean state = entity == null ? false : true;
+        boolean state = entity != null;
 
         if (!pLevel.isClientSide && entity instanceof DummyTile tile)
             tile.markBlockForRenderUpdate();

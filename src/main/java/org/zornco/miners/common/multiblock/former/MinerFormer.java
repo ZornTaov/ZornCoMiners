@@ -20,6 +20,10 @@ public class MinerFormer extends MultiBlockFormer {
 
         pattern.getAllTypes().forEach(multiBlockInWorld -> formDummy(level, multiBlockInWorld, master.getPos()));
         pattern.getAllTypes().forEach(multiBlockInWorld -> finishFormingDummy(level, multiBlockInWorld));
+        if(level.getBlockEntity(master.getPos()) instanceof DummyTile tile)
+        {
+            tile.getSlaves().addAll(pattern.getAllTypes().stream().map(MultiBlockInWorld::getPos).toList());
+        }
     }
 
     public void formDummy(Level level, MultiBlockInWorld multiBlockInWorld, BlockPos master) {
@@ -32,13 +36,15 @@ public class MinerFormer extends MultiBlockFormer {
             tile.setOriginalBlockState(original);
             tile.setController(master);
             tile.setMultiBlockType(multiBlockInWorld.getType());
+
             tile.setChanged();
         }
     }
 
     private void finishFormingDummy(Level level, MultiBlockInWorld multiBlockInWorld) {
-        if (level.getBlockEntity(multiBlockInWorld.getPos()) instanceof DummyTile tile)
+        if (level.getBlockEntity(multiBlockInWorld.getPos()) instanceof DummyTile tile) {
             tile.setFormed(true);
+        }
     }
 
 

@@ -1,7 +1,11 @@
 package org.zornco.miners.common.tile;
 
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -19,6 +23,7 @@ import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.zornco.miners.ZornCoMiners;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 
@@ -27,12 +32,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static org.zornco.miners.common.core.Codecs.BLOCK_POS_LIST_CODEC;
+
 public abstract class DummyTile extends BlockEntity {
     public static final String BLOCKSTATE_NBT = "originalstate";
     public static final String CONTROLLER_NBT = "controllerpos";
     public static final String MB_DATA_NBT = "mbdata";
+    private static final String SLAVES_MB = "slaves";
 
-    private List<BlockPos> SLAVES = new ArrayList<>();
+    private final List<BlockPos> SLAVES = new ArrayList<>();
 
     @NotNull
     private BlockState originalBlockState = Blocks.IRON_BLOCK.defaultBlockState();
@@ -87,7 +95,6 @@ public abstract class DummyTile extends BlockEntity {
 
     public void setFormed(boolean value) {
         this.formed = value;
-        updateFormation();
     }
 
     public boolean getFormed() {
@@ -102,16 +109,6 @@ public abstract class DummyTile extends BlockEntity {
         return controller;
     }
 
-    public void updateFormation(BlockPos node) {
-        if (getMultiBlockType() == MultiBlockInWorldType.MASTER && formed && !SLAVES.contains(node))
-            SLAVES.add(node);
-    }
-
-    public void updateFormation() {
-        if (getController() != null && level.getBlockEntity(getController()) instanceof DummyTile tile)
-            tile.updateFormation(getBlockPos());
-    }
-
     public DummyTile getMaster() {
         if (getMultiBlockType() == MultiBlockInWorldType.MASTER)
             return this;
@@ -119,6 +116,10 @@ public abstract class DummyTile extends BlockEntity {
             return tile;
 
         return null;
+    }
+    public List<BlockPos> getSlaves()
+    {
+        return SLAVES;
     }
 
     @Nullable
@@ -135,13 +136,7 @@ public abstract class DummyTile extends BlockEntity {
     @Override
     public void handleUpdateTag(CompoundTag tag) {
         super.handleUpdateTag(tag);
-        CompoundTag MBData = tag.getCompound(MB_DATA_NBT);
-
-        this.originalBlockState = NbtUtils.readBlockState(MBData.getCompound(BLOCKSTATE_NBT));
-        this.formed = MBData.getBoolean("formed");
-        this.type = MBData.getBoolean("isMaster") ? MultiBlockInWorldType.MASTER : MultiBlockInWorldType.SLAVE;
-        if (MBData.contains(CONTROLLER_NBT))
-            this.controller = NbtUtils.readBlockPos(MBData.getCompound(CONTROLLER_NBT));
+        load(tag);
     }
 
     @Override
@@ -154,7 +149,9 @@ public abstract class DummyTile extends BlockEntity {
         this.type = MBData.getBoolean("isMaster") ? MultiBlockInWorldType.MASTER : MultiBlockInWorldType.SLAVE;
         if (MBData.contains(CONTROLLER_NBT))
             this.controller = NbtUtils.readBlockPos(MBData.getCompound(CONTROLLER_NBT));
-        updateFormation();
+        ListTag list = MBData.getList(SLAVES_MB, CompoundTag.TAG_LIST);
+        BLOCK_POS_LIST_CODEC.decode(NbtOps.INSTANCE, list).resultOrPartial(ZornCoMiners.LOGGER::error)
+            .ifPresent(listTagPair -> SLAVES.addAll(listTagPair.getFirst()));
     }
 
     @Override
@@ -167,5 +164,11 @@ public abstract class DummyTile extends BlockEntity {
         if (controller != null)
             MBData.put(CONTROLLER_NBT, NbtUtils.writeBlockPos(controller));
         tag.put(MB_DATA_NBT, MBData);
+        BLOCK_POS_LIST_CODEC.encodeStart(NbtOps.INSTANCE, SLAVES).resultOrPartial(ZornCoMiners.LOGGER::error)
+            .ifPresent(tag1 -> tag.put(SLAVES_MB, tag1));
+//        ListTag list = new ListTag();
+//        getSlaves().forEach(pos -> list.add(NbtUtils.writeBlockPos(pos)));
+//        if (!list.isEmpty())
+//            tag.put(SLAVES_MB, list);
     }
 }

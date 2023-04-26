@@ -2,10 +2,13 @@ package org.zornco.miners.common.core;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
 import java.util.Optional;
 
 public class Codecs {
@@ -19,4 +22,7 @@ public class Codecs {
         tag.ifPresent(is::setTag);
         return is;
     }));
+    public static final Codec<List<BlockPos>> BLOCK_POS_LIST_CODEC = Codec.list(BlockPos.CODEC);
+    public static final Codec<Direction> DIRECTION_CODEC = Direction.CODEC;//StringRepresentable.fromEnum(Direction::values, Direction::byName);
+    public static final Codec<List<Direction>> DIRECTION_LIST_CODEC = Codec.list(DIRECTION_CODEC);
 }
