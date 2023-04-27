@@ -12,6 +12,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zornco.miners.ZornCoMiners;
@@ -36,6 +38,7 @@ public abstract class DummyTile extends BlockEntity {
     private MultiBlockInWorldType type = MultiBlockInWorldType.NOT_INCLUDED;
     private boolean formed = false;
     private BlockPos controller = null;
+    private AABB renderBounds;
 
     public DummyTile(BlockEntityType<?> pType, BlockPos pPos, BlockState pBlockState) {
         super(pType, pPos, pBlockState);
@@ -57,6 +60,7 @@ public abstract class DummyTile extends BlockEntity {
                     level.setBlock(pos, tile.getOriginalBlockState(), Block.UPDATE_ALL);
             });
         }
+        rebuildRenderBounds();
     }
 
     public @NotNull BlockState getOriginalBlockState() {
@@ -84,6 +88,8 @@ public abstract class DummyTile extends BlockEntity {
 
     public void setFormed(boolean value) {
         this.formed = value;
+        if (isMaster())
+            rebuildRenderBounds();
     }
 
     public boolean getFormed() {
@@ -114,6 +120,24 @@ public abstract class DummyTile extends BlockEntity {
     public List<BlockPos> getSlaves()
     {
         return SLAVES;
+    }
+    public void rebuildRenderBounds() {
+        this.renderBounds = super.getRenderBoundingBox();
+        for (BlockPos nodePos : SLAVES) {
+            AABB aabbNodePos = AABB.ofSize(Vec3.atCenterOf(nodePos), 1, 1, 1);
+            renderBounds = getRenderBoundingBox().minmax(aabbNodePos);
+        }
+    }
+
+    @Override
+    public AABB getRenderBoundingBox() {
+        return renderBounds != null ? renderBounds : super.getRenderBoundingBox();
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        if (level != null && level.isClientSide) renderBounds = super.getRenderBoundingBox();
     }
 
     @Nullable
@@ -146,6 +170,8 @@ public abstract class DummyTile extends BlockEntity {
         BLOCK_POS_LIST_CODEC.parse(NbtOps.INSTANCE, MBData.get(SLAVES_MB))
             .resultOrPartial(ZornCoMiners.LOGGER::error)
             .ifPresent(SLAVES::addAll);
+
+        if (level != null && level.isClientSide) rebuildRenderBounds();
     }
 
     @Override

@@ -75,11 +75,6 @@ public class MinerTile extends DummyTile {
     }
 
     @Override
-    public void onLoad() {
-        super.onLoad();
-    }
-
-    @Override
     public void load(@Nonnull CompoundTag tag) {
         super.load(tag);
         this.ticksRunning = tag.getInt("ticks");
