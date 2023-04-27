@@ -48,6 +48,7 @@ public class ZornCoMiners
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(ClientRegistration::init);
+        modEventBus.addListener(ClientRegistration::registerReloadListeners);
         modEventBus.addListener(this::enqueueIMC);
 
         Registration.init(modEventBus);

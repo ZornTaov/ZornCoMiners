@@ -1,8 +1,13 @@
 package org.zornco.miners.client.render;
 
+import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.BlockModelShaper;
@@ -19,7 +24,9 @@ import net.minecraftforge.client.RenderTypeHelper;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.renderable.BakedModelRenderable;
+import net.minecraftforge.client.model.renderable.CompositeRenderable;
 import org.jetbrains.annotations.NotNull;
+import org.zornco.miners.client.ClientRegistration;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 import org.zornco.miners.common.tile.DummyTile;
 
@@ -33,9 +40,22 @@ public class DummyBlockRenderer<T extends DummyTile> implements BlockEntityRende
     public void render(DummyTile be, float pPartialTick, PoseStack matrix, @NotNull MultiBufferSource buffer, int pPackedLight, int pPackedOverlay) {
         Level level = be.getLevel();
         if(level == null) return;
-        if (be.isMaster()) return;
+        if (!be.isMaster()) return;
 
         matrix.pushPose();
+
+        var bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+
+        var map = ImmutableMap.<String, Matrix4f>builder();
+        var base = new Matrix4f();
+        //base.rotation((float)Math.sin(time * 0.4) * 0.1f, 0, 0, 1);
+        //base.translate(new Vector3f(-.5f, -2f, -.5f));
+        matrix.translate(.5f, -3f, .5f);
+        matrix.mulPose(Quaternion.fromXYZ(0, (float)Math.PI/4F, 0));
+        matrix.scale(.8f, 1f, .8f);
+        //map.put("base", base);
+        var transforms = CompositeRenderable.Transforms.of(map.build());
+        ClientRegistration.renderable.render(matrix, bufferSource, RenderType::entitySolid, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pPartialTick, transforms);
         BlockState state = be.getOriginalBlockState();
         BlockModelShaper blockModelShapes = context.getBlockRenderDispatcher().getBlockModelShaper();
         BakedModel model = blockModelShapes.getBlockModel(state);
@@ -56,17 +76,17 @@ public class DummyBlockRenderer<T extends DummyTile> implements BlockEntityRende
         {
             RenderType bufferType = RenderTypeHelper.getEntityRenderType(type, false);
 
-            renderer.renderModel(
-                matrix.last(),
-                buffer.getBuffer(bufferType),
-                state,
-                model,
-                red, green, blue,
-                light,
-                OverlayTexture.NO_OVERLAY,
-                data,
-                type
-            );
+//            renderer.renderModel(
+//                matrix.last(),
+//                buffer.getBuffer(bufferType),
+//                state,
+//                model,
+//                red, green, blue,
+//                light,
+//                OverlayTexture.NO_OVERLAY,
+//                data,
+//                type
+//            );
         }
         matrix.popPose();
     }

@@ -15,23 +15,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MultiBlockManager {
-    private static final HashMap<MultiBlockPattern, IMultiblockFormer> STRUCTURES = new HashMap<>();
+    private static final HashMap<IMultiblockFormer, MultiBlockPattern> STRUCTURES = new HashMap<>();
 
     public static void load(MultiBlockPattern pattern, IMultiblockFormer former) {
-        STRUCTURES.put(pattern, former);
+        STRUCTURES.put(former, pattern );
     }
 
-    public static void handle(Level level, BlockPos pos) {
-        var structurePattern = STRUCTURES.keySet().stream()
-                .filter(pattern -> pattern.find(level, pos) != null)
-                .findFirst();
-
-        structurePattern.ifPresent(multiBlockPattern -> {
-            IMultiblockFormer former = STRUCTURES.get(multiBlockPattern);
-            former.form(level, pos, multiBlockPattern.find(level, pos));
-        });
+    public static void handle(Level level,BlockPos pos) {
+        for(var pattern : STRUCTURES.entrySet())
+        {
+            var match = pattern.getValue().find(level, pos);
+            if (match != null && match.getMaster().getPos().equals(pos))
+                pattern.getKey().form(level, pos, match);
+        }
     }
 
+    public static MultiBlockPattern getPattern(IMultiblockFormer former)
+    {
+        return STRUCTURES.get(former);
+    }
 
     public static void init() {
         load(MultiBlockPatternBuilder

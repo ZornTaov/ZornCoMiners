@@ -1,36 +1,25 @@
 package org.zornco.miners.common.tile;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DynamicOps;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.gameevent.BlockPositionSource;
-import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.gameevent.GameEventListener;
-import net.minecraft.world.level.gameevent.PositionSource;
-import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.zornco.miners.ZornCoMiners;
-import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorld;
 import org.zornco.miners.common.multiblock.pattern.MultiBlockInWorldType;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.zornco.miners.common.core.Codecs.BLOCK_POS_LIST_CODEC;
 
@@ -62,7 +51,7 @@ public abstract class DummyTile extends BlockEntity {
     }
 
     public void deconstruct() {
-        if (this.type == MultiBlockInWorldType.MASTER) {
+        if (this.type == MultiBlockInWorldType.MASTER && level != null) {
             SLAVES.forEach(pos -> {
                 if (level.getBlockEntity(pos) instanceof DummyTile tile)
                     level.setBlock(pos, tile.getOriginalBlockState(), Block.UPDATE_ALL);
@@ -70,7 +59,7 @@ public abstract class DummyTile extends BlockEntity {
         }
     }
 
-    public BlockState getOriginalBlockState() {
+    public @NotNull BlockState getOriginalBlockState() {
         return originalBlockState;
     }
 
@@ -114,6 +103,7 @@ public abstract class DummyTile extends BlockEntity {
     }
 
     public DummyTile getMaster() {
+        if (level == null) return null;
         if (getMultiBlockType() == MultiBlockInWorldType.MASTER)
             return this;
         if (getController() != null && level.getBlockEntity(getController()) instanceof DummyTile tile)
@@ -133,7 +123,7 @@ public abstract class DummyTile extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
+    public @NotNull CompoundTag getUpdateTag() {
         return saveWithoutMetadata();
     }
 
